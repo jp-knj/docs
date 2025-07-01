@@ -2,6 +2,8 @@
   "plugins": ["mdx"],
   "rules": {
     "preset-ja-spacing": true,
-    "@textlint-ja/preset-ai-writing": true
+    "prh": {
+      "rulePaths": ["./prh-rules.yml"]
+    }
   }
 }

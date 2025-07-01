@@ -1,0 +1,12 @@
+version: 1
+rules:
+  # コロンを句点に置換
+  - expected: "。"
+    pattern:
+      - "："
+      - ":"
+    specs:
+      - from: "これは例です："
+        to: "これは例です。"
+      - from: "説明:"
+        to: "説明。"
