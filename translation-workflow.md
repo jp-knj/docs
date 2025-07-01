@@ -1,49 +1,49 @@
-# Astro ドキュメント翻訳ワークフロー
+# Astro Documentation Translation Workflow
 
-## 概要
-このドキュメントは、Astro ドキュメントの実務導線ガイド（backend / cms / deploy / integrations-guide / internationalization など）を英語から日本語へ翻訳する際のワークフローを説明します。
+## Overview
+This document explains the workflow for translating Astro documentation practical guides (cms / deploy / integrations-guide / internationalization, etc.) from English to Japanese.
 
-## 翻訳パイプライン
+## Translation Pipeline
 
-### 1. コード/CLI検証（Claude）
-- すべてのコードブロック、シェルコマンド、設定スニペットをスキャン
-- 問題がある場合（タイポ、古いフラグ、不足インポート）はインラインで修正し、`<!-- ✅ fixed by Claude -->` を追加
-- 変更が不要な場合は `<!-- ✔ verified by Claude -->` を追加
+### 1. Code/CLI Verification (Claude)
+- Scan all code blocks, shell commands, and configuration snippets
+- If issues are found (typos, outdated flags, missing imports), fix inline and add `<!-- ✅ fixed by Claude -->`
+- If no changes needed, add `<!-- ✔ verified by Claude -->`
 
-### 2. 翻訳（Gemini）
-- 検証済みの英語MDXをGeminiに送信して日本語翻訳
-- GeminiがフルのJapanese MDXを返す
+### 2. Translation (Gemini)
+- Send verified English MDX to Gemini for Japanese translation
+- Gemini returns full Japanese MDX
 
-### 3. スタイルリンティング（textlint）
-- 翻訳されたMDXを `textlint --config .textlintrc-ja-docs --fix` で実行
-- 自動修正可能なものは修正し、警告が残る場合は以下を追加：
+### 3. Style Linting (textlint)
+- Run translated MDX through `textlint --config .textlintrc-ja-docs --fix`
+- Auto-fix what's possible, and if warnings remain, add:
   `<!-- textlint-remaining: <list messages> -->`
 
-## 翻訳ルール
+## Translation Rules
 
-### 必須ルール
-1. フロントマターをすべて保持し、翻訳完了時に `i18nReady: true` を設定
-2. コードブロック、コメント、ファイルパスは元のままを維持（ステップ1で修正されない限り）
-3. 内部リンクをすべて `/en/...` → `/ja/...` に変換
-4. Astro日本語スタイルガイドに従う：
-   - 用語統一辞書に従う（例：Supabase → スーパーベース）
-   - 半角英数字・全角記号の混在を避ける
-   - 1文60字前後で改行
-5. 初出時は英語を括弧内に保持：「サービスワーカー (Service Worker)」
+### Required Rules
+1. Preserve all frontmatter and set `i18nReady: true` when translation is complete
+2. Keep code blocks, comments, and file paths as-is (unless fixed in step 1)
+3. Convert all internal links from `/en/...` → `/ja/...`
+4. Follow Astro Japanese Style Guide:
+   - Follow terminology dictionary (e.g., Supabase → スーパーベース)
+   - Avoid mixing half-width alphanumeric and full-width symbols
+   - Line breaks around 60 characters per sentence
+5. For first occurrence, keep English in parentheses: "サービスワーカー (Service Worker)"
 
-## 実行例
+## Execution Examples
 
-### 1. 単一ファイルの翻訳（appwriteio.mdx）
+### 1. Single File Translation (appwriteio.mdx)
 
 ```bash
-# 英語版ファイルを読み込み
+# Read English source file
 src/content/docs/en/guides/backend/appwriteio.mdx
 
-# 日本語版として保存
+# Save as Japanese version
 src/content/docs/ja/guides/backend/appwriteio.mdx
 ```
 
-翻訳結果：
+Translation result:
 ```mdx
 ---
 title: Appwrite & Astro
@@ -62,39 +62,39 @@ i18nReady: true
 - [Astro 向け Appwrite デモ](https://github.com/appwrite/demos-for-astro)
 ```
 
-### 2. 複数ファイルの一括翻訳
+### 2. Batch Translation of Multiple Files
 
-現在、以下のファイルがja/guides/backend/に存在しません：
+Currently, the following files do not exist in ja/guides/backend/:
 - google-firebase.mdx
 - neon.mdx
 - sentry.mdx
 - supabase.mdx
 - turso.mdx
 
-## textlint実行方法
+## textlint Execution
 
 ```bash
-# 個別ファイルのチェック
+# Check individual file
 pnpm textlint --config .textlintrc.ja.json src/content/docs/ja/guides/backend/appwriteio.mdx
 
-# 全日本語ドキュメントのチェック
+# Check all Japanese documentation
 pnpm lint:ja
 ```
 
-## 翻訳ステータス
+## Translation Status
 
-| ファイル名 | ステータス | 備考 |
-|-----------|----------|------|
-| appwriteio.mdx | ✅ 完了 | textlint検証済み |
-| google-firebase.mdx | 🔄 進行中 | - |
-| neon.mdx | ⏳ 保留 | - |
-| sentry.mdx | ⏳ 保留 | - |
-| supabase.mdx | ⏳ 保留 | - |
-| turso.mdx | ⏳ 保留 | - |
+| File Name | Status | Notes |
+|-----------|--------|-------|
+| appwriteio.mdx | ✅ Complete | textlint verified |
+| google-firebase.mdx | 🔄 In Progress | - |
+| neon.mdx | ⏳ Pending | - |
+| sentry.mdx | ⏳ Pending | - |
+| supabase.mdx | ⏳ Pending | - |
+| turso.mdx | ⏳ Pending | - |
 
-## 注意事項
+## Important Notes
 
-- 外部リンクの検証は不要（翻訳時には行わない）
-- コードブロック内のコメントは英語のまま維持
-- 用語統一辞書（/src/content/i18n/ja.yml）を常に参照
-- PRを作成する前に必ず `pnpm lint:ja` を実行して検証
+- External link verification is not required (not done during translation)
+- Comments in code blocks should remain in English
+- Always refer to terminology dictionary (/src/content/i18n/ja.yml)
+- Always run `pnpm lint:ja` for verification before creating PR
