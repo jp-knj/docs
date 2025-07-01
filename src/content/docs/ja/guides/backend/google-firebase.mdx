@@ -12,7 +12,7 @@ import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro'
 import { FileTree } from '@astrojs/starlight/components';
 
 
-[Firebase](https://firebase.google.com/) は、NoSQL データベース、認証、リアルタイムサブスクリプション、関数、ストレージを提供するアプリ開発プラットフォームです。
+[Firebase](https://firebase.google.com/) は、NoSQLデータベース、認証、リアルタイムサブスクリプション、関数、ストレージを提供するアプリ開発プラットフォームです。
 
 [Firebase ホスティングへのデプロイ](/ja/guides/deploy/google-firebase/)に関する別のガイドをご覧ください。
 
@@ -21,14 +21,14 @@ import { FileTree } from '@astrojs/starlight/components';
 ### 前提条件
 
 - [Web アプリが設定された Firebase プロジェクト](https://firebase.google.com/docs/web/setup)。
-- [オンデマンドレンダリング用の `output: 'server'`](/ja/guides/on-demand-rendering/) が有効な Astro プロジェクト。
-- Firebase 認証情報。Astro を Firebase に接続するには、2 つの認証情報セットが必要です。
-  - Web アプリ認証情報。これらの認証情報は、アプリのクライアント側で使用されます。Firebase コンソールの *Project settings > General* で確認できます。**Your apps** セクションまでスクロールして、**Web app** アイコンをクリックします。
-  - プロジェクト認証情報。これらの認証情報は、アプリのサーバー側で使用されます。Firebase コンソールの *Project settings > Service accounts > Firebase Admin SDK > Generate new private key* で生成できます。
+- [オンデマンドレンダリング用の `output: 'server'`](/ja/guides/on-demand-rendering/) が有効なAstroプロジェクト。
+- Firebase認証情報。AstroをFirebaseに接続するには、2つの認証情報セットが必要です。
+  - Webアプリ認証情報。これらの認証情報は、アプリのクライアント側で使用されます。Firebaseコンソールの *Project settings > General* で確認できます。**Your apps** セクションまでスクロールして、**Web app** アイコンをクリックします。
+  - プロジェクト認証情報。これらの認証情報は、アプリのサーバー側で使用されます。Firebaseコンソールの *Project settings > Service accounts > Firebase Admin SDK > Generate new private key* で生成できます。
 
 ### Firebase 認証情報の追加
 
-Firebase 認証情報を Astro に追加するには、プロジェクトのルートに次の変数を含む `.env` ファイルを作成します。
+Firebase認証情報をAstroに追加するには、プロジェクトのルートに次の変数を含む `.env` ファイルを作成します。
 
 ```ini title=".env"
 FIREBASE_PRIVATE_KEY_ID=YOUR_PRIVATE_KEY_ID
@@ -44,7 +44,7 @@ FIREBASE_CLIENT_CERT_URL=YOUR_CLIENT_CERT_URL
 
 これで、これらの環境変数がプロジェクトで使用できるようになります。
 
-Firebase 環境変数の IntelliSense を有効にしたい場合は、`src/` ディレクトリの `env.d.ts` ファイルを編集または作成し、型を設定します。
+Firebase環境変数のIntelliSenseを有効にしたい場合は、`src/` ディレクトリの `env.d.ts` ファイルを編集または作成し、型を設定します。
 
 ```ts title="src/env.d.ts"
 interface ImportMetaEnv {
@@ -65,7 +65,7 @@ interface ImportMeta {
 ```
 
 :::tip
-Astro の[環境変数](/ja/guides/environment-variables/)と `.env` ファイルの詳細をご覧ください。
+Astroの[環境変数](/ja/guides/environment-variables/)と `.env` ファイルの詳細をご覧ください。
 :::
 
 プロジェクトには次の新しいファイルが含まれるようになりました。
@@ -81,10 +81,10 @@ Astro の[環境変数](/ja/guides/environment-variables/)と `.env` ファイ�
 
 ### 依存関係のインストール
 
-Astro を Firebase と接続するには、お好みのパッケージマネージャー用の以下の単一コマンドを使用して、次のパッケージをインストールします。
+AstroをFirebaseと接続するには、お好みのパッケージマネージャー用の以下の単一コマンドを使用して、次のパッケージをインストールします。
 
-- `firebase` - クライアント側用の Firebase SDK
-- `firebase-admin` - サーバー側用の Firebase Admin SDK
+- `firebase` - クライアント側用のFirebase SDK
+- `firebase-admin` - サーバー側用のFirebase Admin SDK
 
 <PackageManagerTabs>
   <Fragment slot="npm">
@@ -104,9 +104,9 @@ Astro を Firebase と接続するには、お好みのパッケージマネー�
   </Fragment>
 </PackageManagerTabs>
 
-次に、`src/` ディレクトリに `firebase` という名前のフォルダを作成し、このフォルダに `client.ts` と `server.ts` という 2 つの新しいファイルを追加します。
+次に、`src/` ディレクトリに `firebase` という名前のフォルダを作成し、このフォルダに `client.ts` と `server.ts` という2つの新しいファイルを追加します。
 
-`client.ts` では、Web アプリ認証情報と `firebase` パッケージを使用してクライアントで Firebase を初期化する次のコードを追加します。
+`client.ts` では、Webアプリ認証情報と `firebase` パッケージを使用してクライアントでFirebaseを初期化する次のコードを追加します。
 
 ```ts title="src/firebase/client.ts"
 import { initializeApp } from "firebase/app";
@@ -124,10 +124,10 @@ export const app = initializeApp(firebaseConfig);
 ```
 
 :::note
-`firebaseConfig` オブジェクトを独自の Web アプリ認証情報に置き換えることを忘れないでください。
+`firebaseConfig` オブジェクトを独自のWebアプリ認証情報に置き換えることを忘れないでください。
 :::
 
-`server.ts` では、プロジェクト認証情報と `firebase-admin` パッケージを使用してサーバーで Firebase を初期化する次のコードを追加します。
+`server.ts` では、プロジェクト認証情報と `firebase-admin` パッケージを使用してサーバーでFirebaseを初期化する次のコードを追加します。
 
 ```ts title="src/firebase/server.ts"
 import type { ServiceAccount } from "firebase-admin";
@@ -183,20 +183,20 @@ export const app = activeApps.length === 0 ? initApp() : activeApps[0];
 
 ### 前提条件
 
-- [Firebase で初期化された](#astro-で-firebase-を初期化する) Astro プロジェクト。
-- Firebase コンソールの *Authentication > Sign-in* メソッドでメール/パスワード認証が有効な Firebase プロジェクト。
+- [Firebase で初期化された](#astro-で-firebase-を初期化する) Astroプロジェクト。
+- Firebaseコンソールの *Authentication > Sign-in* メソッドでメール/パスワード認証が有効なFirebaseプロジェクト。
 
 ### 認証サーバーエンドポイントの作成
 
-Astro での Firebase 認証には、次の 3 つの [Astro サーバーエンドポイント](/ja/guides/endpoints/)が必要です。
+AstroでのFirebase認証には、次の3つの [Astro サーバーエンドポイント](/ja/guides/endpoints/)が必要です。
 
 - `GET /api/auth/signin` - ユーザーをサインインする
 - `GET /api/auth/signout` - ユーザーをサインアウトする
 - `POST /api/auth/register` - ユーザーを登録する
 
-新しいディレクトリ `src/pages/api/auth/` に認証に関連する 3 つのエンドポイント `signin.ts`、`signout.ts`、`register.ts` を作成します。
+新しいディレクトリ `src/pages/api/auth/` に認証に関連する3つのエンドポイント `signin.ts`、`signout.ts`、`register.ts` を作成します。
 
-`signin.ts` には、Firebase を使用してユーザーをサインインするコードが含まれています。
+`signin.ts` には、Firebaseを使用してユーザーをサインインするコードが含まれています。
 
 ```ts title="src/pages/api/auth/signin.ts"
 import type { APIRoute } from "astro";
@@ -240,11 +240,11 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
 ```
 
 :::caution
-Firebase では[1 つのクッキーの使用のみが許可され、それは `__session` という名前でなければなりません](https://firebase.google.com/docs/hosting/manage-cache#using_cookies)。クライアントが送信する他のクッキーは、アプリケーションには表示されません。
+Firebaseでは[1 つのクッキーの使用のみが許可され、それは `__session` という名前でなければなりません](https://firebase.google.com/docs/hosting/manage-cache#using_cookies)。クライアントが送信する他のクッキーは、アプリケーションには表示されません。
 :::
 
 :::note
-これは signin エンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
+これはsigninエンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
 :::
 
 `signout.ts` には、セッションクッキーを削除してユーザーをログアウトするコードが含まれています。
@@ -261,10 +261,10 @@ export const GET: APIRoute = async ({ redirect, cookies }) => {
 ```
 
 :::note
-これは signout エンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
+これはsignoutエンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
 :::
 
-`register.ts` には、Firebase を使用してユーザーを登録するコードが含まれています。
+`register.ts` には、Firebaseを使用してユーザーを登録するコードが含まれています。
 
 ```ts title="src/pages/api/auth/register.ts"
 import type { APIRoute } from "astro";
@@ -305,7 +305,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 ```
 
 :::note
-これは register エンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
+これはregisterエンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
 :::
 
 認証用のサーバーエンドポイントを作成後、プロジェクトディレクトリには次の新しいファイルが含まれるようになりました。
@@ -329,7 +329,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
 ### ページの作成
 
-Firebase エンドポイントを使用するページを作成します。
+Firebaseエンドポイントを使用するページを作成します。
 
 - `src/pages/register` - ユーザーを登録するフォームを含む
 - `src/pages/signin` - ユーザーをサインインするフォームを含む
@@ -357,11 +357,11 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 ```
 
-`src/pages/signin.astro` は Firebase サーバーアプリを使用してユーザーのセッションクッキーを検証します。ユーザーが認証されている場合、ページはユーザーを `/dashboard` ページにリダイレクトします。
+`src/pages/signin.astro` はFirebaseサーバーアプリを使用してユーザーのセッションクッキーを検証します。ユーザーが認証されている場合、ページはユーザーを `/dashboard` ページにリダイレクトします。
 
-以下のページ例には、Firebase クライアントアプリによって生成された ID トークンを使用して `/api/auth/signin` エンドポイントに `POST` リクエストを送信するフォームが含まれています。
+以下のページ例には、Firebaseクライアントアプリによって生成されたIDトークンを使用して `/api/auth/signin` エンドポイントに `POST` リクエストを送信するフォームが含まれています。
 
-エンドポイントは ID トークンを検証し、ユーザー用の新しいセッションクッキーを作成します。その後、エンドポイントはユーザーを `/dashboard` ページにリダイレクトします。
+エンドポイントはIDトークンを検証し、ユーザー用の新しいセッションクッキーを作成します。その後、エンドポイントはユーザーを `/dashboard` ページにリダイレクトします。
 
 ```astro title="src/pages/signin.astro"
 ---
@@ -433,7 +433,7 @@ if (Astro.cookies.has("__session")) {
 </script>
 ```
 
-`src/pages/dashboard.astro` は Firebase サーバーアプリを使用してユーザーのセッションクッキーを検証します。ユーザーが認証されていない場合、ページはユーザーを `/signin` ページにリダイレクトします。
+`src/pages/dashboard.astro` はFirebaseサーバーアプリを使用してユーザーのセッションクッキーを検証します。ユーザーが認証されていない場合、ページはユーザーを `/signin` ページにリダイレクトします。
 
 以下のページ例では、ユーザーの名前とサインアウトボタンが表示されます。ボタンをクリックすると、`/api/auth/signout` エンドポイントに `GET` リクエストが送信されます。
 
@@ -471,14 +471,14 @@ if (!user) {
 
 ### OAuth プロバイダーの追加
 
-アプリに OAuth プロバイダーを追加するには、Firebase コンソールでそれらを有効にする必要があります。
+アプリにOAuthプロバイダーを追加するには、Firebaseコンソールでそれらを有効にする必要があります。
 
-Firebase コンソールで、**Authentication** セクションに移動し、**Sign-in method** タブをクリックします。次に、**Add a new provider** ボタンをクリックして、使用したいプロバイダーを有効にします。
+Firebaseコンソールで、**Authentication** セクションに移動し、**Sign-in method** タブをクリックします。次に、**Add a new provider** ボタンをクリックして、使用したいプロバイダーを有効にします。
 
 以下の例では **Google** プロバイダーを使用します。
 
 `signin.astro` ページを編集して、以下を追加します。
-- 既存のフォームの下にGoogle でサインインするボタン
+- 既存のフォームの下にGoogleでサインインするボタン
 - 既存の `<script>` でサインインプロセスを処理するボタンのイベントリスナー。
 
 ```astro title="src/pages/signin.astro" ins={27, 34, 35, 69-83}
@@ -568,34 +568,34 @@ if (Astro.cookies.has("__session")) {
 </script>
 ```
 
-クリックすると、Google サインインボタンはポップアップウィンドウを開いて Google でサインインします。ユーザーがサインインすると、OAuth プロバイダーによって生成された ID トークンを使用して `/api/auth/signin` エンドポイントに `POST` リクエストが送信されます。
+クリックすると、Googleサインインボタンはポップアップウィンドウを開いてGoogleでサインインします。ユーザーがサインインすると、OAuthプロバイダーによって生成されたIDトークンを使用して `/api/auth/signin` エンドポイントに `POST` リクエストが送信されます。
 
-エンドポイントは ID トークンを検証し、ユーザー用の新しいセッションクッキーを作成します。その後、エンドポイントはユーザーを `/dashboard` ページにリダイレクトします。
+エンドポイントはIDトークンを検証し、ユーザー用の新しいセッションクッキーを作成します。その後、エンドポイントはユーザーを `/dashboard` ページにリダイレクトします。
 
 ## Firestore データベースへの接続
 
 ### 前提条件
 
-- [Astro で Firebase を初期化する](#astro-で-firebase-を初期化する)セクションで説明されているように Firebase で初期化された Astro プロジェクト。
+- [Astro で Firebase を初期化する](#astro-で-firebase-を初期化する)セクションで説明されているようにFirebaseで初期化されたAstroプロジェクト。
 
-- Firestore データベースを持つ Firebase プロジェクト。[Firebase ドキュメントに従って新しいプロジェクトを作成し、Firestore データベースを設定](https://firebase.google.com/docs/firestore/quickstart)できます。
+- Firestoreデータベースを持つFirebaseプロジェクト。[Firebase ドキュメントに従って新しいプロジェクトを作成し、Firestore データベースを設定](https://firebase.google.com/docs/firestore/quickstart)できます。
 
-この説明では、Firestore コレクションは **friends** と呼ばれ、次のフィールドを持つドキュメントが含まれます。
+この説明では、Firestoreコレクションは **friends** と呼ばれ、次のフィールドを持つドキュメントが含まれます。
 
-- `id`: Firestore によって自動生成
+- `id`: Firestoreによって自動生成
 - `name`: 文字列フィールド
 - `age`: 数値フィールド
 - `isBestFriend`: ブール値フィールド
 
 ### サーバーエンドポイントの作成
 
-新しいディレクトリ `src/pages/api/friends/` に `index.ts` と `[id].ts` という 2 つの新しいファイルを作成します。これらは、次の方法で Firestore データベースと対話する 2 つのサーバーエンドポイントを作成します。
+新しいディレクトリ `src/pages/api/friends/` に `index.ts` と `[id].ts` という2つの新しいファイルを作成します。これらは、次の方法でFirestoreデータベースと対話する2つのサーバーエンドポイントを作成します。
 
-- `POST /api/friends`: friends コレクションに新しいドキュメントを作成する。
-- `POST /api/friends/:id`: friends コレクションのドキュメントを更新する。
-- `DELETE /api/friends/:id`: friends コレクションのドキュメントを削除する。
+- `POST /api/friends`: friendsコレクションに新しいドキュメントを作成する。
+- `POST /api/friends/:id`: friendsコレクションのドキュメントを更新する。
+- `DELETE /api/friends/:id`: friendsコレクションのドキュメントを削除する。
 
-`index.ts` には、friends コレクションに新しいドキュメントを作成するコードが含まれます。
+`index.ts` には、friendsコレクションに新しいドキュメントを作成するコードが含まれます。
 
 ```ts title="src/pages/api/friends/index.ts"
 import type { APIRoute } from "astro";
@@ -634,7 +634,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 これは `friends` エンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
 :::
 
-`[id].ts` には、friends コレクションのドキュメントを更新および削除するコードが含まれます。
+`[id].ts` には、friendsコレクションのドキュメントを更新および削除するコードが含まれます。
 
 ```ts title="src/pages/api/friends/[id].ts"
 import type { APIRoute } from "astro";
@@ -698,7 +698,7 @@ export const DELETE: APIRoute = async ({ params, redirect }) => {
 これは `friends/:id` エンドポイントの基本的な実装です。ニーズに合わせて、このエンドポイントにより多くのロジックを追加できます。
 :::
 
-Firestore 用のサーバーエンドポイントを作成後、プロジェクトディレクトリには次の新しいファイルが含まれるようになりました。
+Firestore用のサーバーエンドポイントを作成後、プロジェクトディレクトリには次の新しいファイルが含まれるようになりました。
 
 <FileTree title="Project Structure">
 - src
@@ -718,7 +718,7 @@ Firestore 用のサーバーエンドポイントを作成後、プロジェク�
 
 ### ページの作成
 
-Firestore エンドポイントを使用するページを作成します。
+Firestoreエンドポイントを使用するページを作成します。
 
 - `src/pages/add.astro` - 新しい友達を追加するフォームを含む。
 - `src/pages/edit/[id].astro` - 友達を編集するフォームと友達を削除するボタンを含む。
