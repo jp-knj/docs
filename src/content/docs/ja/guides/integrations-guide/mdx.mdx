@@ -1,0 +1,404 @@
+---
+type: integration
+title: '@astrojs/mdx'
+description: Astro プロジェクトで @astrojs/mdx インテグレーションを使用する方法を学びます。
+sidebar:
+  label: MDX
+githubIntegrationURL: 'https://github.com/withastro/astro/tree/main/packages/integrations/mdx/'
+category: other
+i18nReady: true
+---
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro'
+import ReadMore from '~/components/ReadMore.astro'
+import Since from '~/components/Since.astro'
+
+この **[Astro インテグレーション][astro-integration]** は [MDX](https://mdxjs.com/) コンポーネントの使用を可能にし、`.mdx` ファイルとしてページを作成できるようにします。
+
+## なぜ MDX？
+
+MDX により、Astro で Markdown コンテンツ内に変数、JSX 式、コンポーネントを使用できます。MDX で作成された既存のコンテンツがある場合、このインテグレーションによってそれらのファイルを Astro プロジェクトに持ち込むことができます。
+
+## インストール
+
+Astro には公式インテグレーションのセットアップを自動化する `astro add` コマンドが含まれています。お好みで、代わりに[手動でインテグレーションをインストール](#manual-install)することもできます。
+
+新しいターミナルウィンドウで以下のコマンドのいずれかを実行してください。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npx astro add mdx
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm astro add mdx
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn astro add mdx
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+問題が発生した場合は、[GitHub で報告](https://github.com/withastro/astro/issues)していただき、以下の手動インストール手順を試してください。
+
+### 手動インストール
+
+まず、`@astrojs/mdx` パッケージをインストールします。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install @astrojs/mdx
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add @astrojs/mdx
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add @astrojs/mdx
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+次に、`integrations` プロパティを使用して、インテグレーションを `astro.config.*` ファイルに適用します。
+
+```js title="astro.config.mjs" ins={2} ins="mdx()"
+import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+
+export default defineConfig({
+  // ...
+  integrations: [mdx()],
+});
+```
+
+### エディターインテグレーション
+
+[VS Code](https://code.visualstudio.com/) でのエディターサポートには、[公式 MDX 拡張機能](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)をインストールしてください。
+
+他のエディターの場合は、[MDX 言語サーバー](https://github.com/mdx-js/mdx-analyzer/tree/main/packages/language-server)を使用してください。
+
+## 使用方法
+
+標準的な MDX 機能の使用について学ぶには、[MDX ドキュメント](https://mdxjs.com/docs/what-is-mdx/)をご覧ください。
+
+## Astro での MDX
+
+MDX インテグレーションを追加すると、JSX 変数、式、コンポーネントを使用した Markdown オーサリングが強化されます。
+
+また、MDX での Markdown スタイルのフロントマター (frontmatter) のサポートなど、標準的な MDX に追加機能も加わります。これにより、[Astro の組み込み Markdown 機能](/ja/guides/markdown-content/)のほとんどを使用できます。
+
+`.mdx` ファイルは、Astro の HTML ライクな構文ではなく、[MDX 構文](https://mdxjs.com/docs/what-is-mdx/#mdx-syntax)で記述する必要があります。
+
+### コンテンツコレクションで MDX を使用する
+
+MDX ファイルをコンテンツコレクションに含めるには、[コレクションローダー](/ja/guides/content-collections/#defining-the-collection-loader)が `.mdx` ファイルからコンテンツを読み込むように設定されていることを確認してください。
+
+```js title="src/content.config.ts" ins="mdx"
+import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
+
+const blog = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/blog" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+  })
+});
+
+export const collections = { blog };
+```
+
+### MDX でエクスポートされた変数を使用する
+
+MDX は `export` ステートメントを使用して MDX コンテンツに変数を追加したり、それをインポートするコンポーネントにデータをエクスポートしたりすることをサポートしています。
+
+例えば、MDX ページまたはコンポーネントから `title` フィールドをエクスポートして、`{JSX 式}` で見出しとして使用できます。
+
+```mdx title="/src/blog/posts/post-1.mdx"
+export const title = 'My first MDX post'
+
+# {title}
+```
+
+または、`import` と `import.meta.glob()` ステートメントを使用してページでそのエクスポートされた `title` を使用できます。
+
+```astro title="src/pages/index.astro"
+---
+const matches = import.meta.glob('./posts/*.mdx', { eager: true });
+const posts = Object.values(matches);
+---
+
+{posts.map(post => <p>{post.title}</p>)}
+```
+
+#### エクスポートされたプロパティ
+
+`import` ステートメントまたは `import.meta.glob()` を使用する際、`.astro` コンポーネントで以下のプロパティが利用できます。
+
+- **`file`** - 絶対ファイルパス（例。`/home/user/projects/.../file.mdx`）。
+- **`url`** - ページの URL（例。`/ja/guides/markdown-content`）。
+- **`frontmatter`** - ファイルの YAML/TOML フロントマターで指定されたデータが含まれます。
+- **`getHeadings()`** - ファイル内のすべての見出し（`<h1>` から `<h6>`）の配列を返す非同期関数で、タイプは `{ depth: number; slug: string; text: string }[]` です。各見出しの `slug` は指定された見出しの生成された ID に対応し、アンカーリンクに使用できます。
+- **`<Content />`** - ファイルの完全にレンダリングされたコンテンツを返すコンポーネント。
+- **（任意の `export` 値）** - MDX ファイルは `export` ステートメントでデータをエクスポートすることもできます。
+
+### MDX でフロントマター変数を使用する
+
+Astro MDX インテグレーションには、デフォルトで MDX でフロントマターを使用するサポートが含まれています。Markdown ファイルと同様にフロントマタープロパティを追加すると、これらの変数はテンプレートで使用でき、他の場所でファイルをインポートする際には名前付きプロパティとして利用できます。
+
+```mdx title="/src/blog/posts/post-1.mdx"
+---
+title: 'My first MDX post'
+author: 'Houston'
+---
+
+# {frontmatter.title}
+
+Written by: {frontmatter.author}
+```
+
+### MDX でコンポーネントを使用する
+
+MDX インテグレーションをインストールした後、他の Astro コンポーネントで使用するのと同様に、MDX（`.mdx`）ファイルで [Astro コンポーネント](/ja/basics/astro-components/)と [UI フレームワークコンポーネント](/ja/guides/framework-components/#using-framework-components)の両方をインポートして使用できます。
+
+必要に応じて、UI フレームワークコンポーネントに `client:directive` を含めることを忘れないでください！
+
+importとexportステートメントの使用例については、[MDX ドキュメント](https://mdxjs.com/docs/what-is-mdx/#esm)でより多くの例をご覧ください。
+
+```mdx title="src/blog/post-1.mdx" {4,9}
+---
+title: My first post
+---
+import ReactCounter from '../components/ReactCounter.jsx';
+
+I just started my new Astro blog! 
+
+Here is my counter component, working in MDX:
+<ReactCounter client:load />
+```
+
+#### インポートされた MDX でカスタムコンポーネントを使用する
+
+インポートされた MDX コンテンツをレンダリングする際、[カスタムコンポーネント](#assigning-custom-components-to-html-elements)は `components` プロップを介して渡すことができます。
+
+```astro title="src/pages/page.astro" "components={{...components, h1: Heading }}"
+---
+import { Content, components } from '../content.mdx';
+import Heading from '../Heading.astro';
+---
+<!-- # 構文用のカスタム <h1> を作成し、_かつ_ `content.mdx` で定義されたカスタムコンポーネントを適用 -->
+<Content components={{...components, h1: Heading }} />
+```
+
+:::note
+MDX ファイルで定義およびエクスポートされたカスタムコンポーネントは、インポートしてから `components` プロパティを介して `<Content />` コンポーネントに渡し戻す必要があります。
+:::
+
+#### HTML 要素にカスタムコンポーネントを割り当てる
+
+MDX では、Markdown 構文を標準的な HTML 要素ではなくカスタムコンポーネントにマップできます。これにより、標準的な Markdown 構文で記述しながら、選択した要素に特別なコンポーネントスタイルを適用できます。
+
+カスタムコンポーネントを `.mdx` ファイルにインポートし、標準的な HTML 要素をカスタムコンポーネントにマップする `components` オブジェクトをエクスポートします。
+
+```mdx title="src/blog/posts/post-1.mdx"
+import Blockquote from '../components/Blockquote.astro';
+export const components = {blockquote: Blockquote}
+
+> This quote will be a custom Blockquote
+```
+
+```astro title="src/components/Blockquote.astro"
+---
+const props = Astro.props;
+---
+<blockquote {...props} class="bg-blue-50 p-4">
+  <span class="text-4xl text-blue-600 mb-2">"</span>
+  <slot /> <!-- 子コンテンツ用に `<slot/>` を追加することを忘れずに！ -->
+</blockquote>
+```
+
+カスタムコンポーネントとして上書きできる HTML 要素の完全なリストについては、[MDX ウェブサイト](https://mdxjs.com/table-of-components/)をご覧ください。
+
+## 設定
+
+MDX インテグレーションがインストールされると、Astro プロジェクトで `.mdx` ファイルを使用するために設定は必要ありません。
+
+以下のオプションで MDX のレンダリング方法を設定できます。
+
+* [Markdown 設定から継承されるオプション](#options-inherited-from-markdown-config)
+* [`extendMarkdownConfig`](#extendmarkdownconfig)
+* [`recmaPlugins`](#recmaplugins)
+* [`optimize`](#optimize)
+
+### Markdown 設定から継承されるオプション
+
+すべての [`markdown` 設定オプション](/ja/reference/configuration-reference/#markdown-options)は、MDX インテグレーションで個別に設定できます。これには remark と rehype プラグイン、構文ハイライト、その他が含まれます。オプションは Markdown 設定のものがデフォルトになります（この動作を変更するには [`extendMarkdownConfig` オプション](#extendmarkdownconfig)を参照してください）。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+import remarkToc from 'remark-toc';
+import rehypePresetMinify from 'rehype-preset-minify';
+
+export default defineConfig({
+  // ...
+  integrations: [
+    mdx({
+      syntaxHighlight: 'shiki',
+      shikiConfig: { theme: 'dracula' },
+      remarkPlugins: [remarkToc],
+      rehypePlugins: [rehypePresetMinify],
+      remarkRehype: { footnoteLabel: 'Footnotes' },
+      gfm: false,
+    }),
+  ],
+});
+```
+
+:::caution
+MDX は remark と rehype プラグインを文字列として渡すことをサポートしていません。代わりにプラグイン関数をインストール、インポート、適用してください。
+:::
+
+<ReadMore>オプションの完全なリストについては、[Markdown オプションリファレンス](/ja/reference/configuration-reference/#markdown-options)をご覧ください。</ReadMore>
+
+### `extendMarkdownConfig`
+
+* **タイプ。** `boolean`
+* **デフォルト。** `true`
+
+MDX はデフォルトで[プロジェクトの既存の Markdown 設定](/ja/reference/configuration-reference/#markdown-options)を拡張します。個別のオプションを上書きするには、MDX 設定でそれらの同等のものを指定できます。
+
+例えば、GitHub Flavored Markdown を無効にし、MDX ファイルに異なる remark プラグインセットを適用する必要があるとします。`extendMarkdownConfig` がデフォルトで有効になっている状態で、これらのオプションを次のように適用できます。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+
+export default defineConfig({
+  // ...
+  markdown: {
+    syntaxHighlight: 'prism',
+    remarkPlugins: [remarkPlugin1],
+    gfm: true,
+  },
+  integrations: [
+    mdx({
+      // `syntaxHighlight` は Markdown から継承
+
+      // Markdown の `remarkPlugins` は無視され、
+      // `remarkPlugin2` のみが適用されます。
+      remarkPlugins: [remarkPlugin2],
+      // `gfm` は `false` に上書きされます
+      gfm: false,
+    }),
+  ],
+});
+```
+
+MDX で `markdown` 設定の拡張を無効にする必要がある場合もあります。これには、`extendMarkdownConfig` を `false` に設定します。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+
+export default defineConfig({
+  // ...
+  markdown: {
+    remarkPlugins: [remarkPlugin1],
+  },
+  integrations: [
+    mdx({
+      // Markdown 設定は無視されます
+      extendMarkdownConfig: false,
+      // `remarkPlugins` は適用されません
+    }),
+  ],
+});
+```
+
+### `recmaPlugins`
+
+これらは出力 [estree](https://github.com/estree/estree) を直接変更するプラグインです。これは MDX ファイル内の JavaScript 変数を変更または注入するのに役立ちます。
+
+estree 出力を試すには [AST Explorer の使用](https://astexplorer.net/)を、JavaScript ノードを検索するには [`estree-util-visit`](https://unifiedjs.com/explore/package/estree-util-visit/) を試すことをお勧めします。
+
+### `optimize`
+
+* **タイプ。** `boolean | { ignoreElementNames?: string[] }`
+
+これは、内部 rehype プラグインを介してより高速なビルドとレンダリングのために MDX 出力を最適化するオプション設定です。これは多くの MDX ファイルがあり、ビルドが遅いことに気づいた場合に有用かもしれません。ただし、このオプションはエスケープされていない HTML を生成する可能性があるため、有効にした後でサイトのインタラクティブな部分が正しく動作することを確認してください。
+
+これはデフォルトで無効になっています。MDX 最適化を有効にするには、MDX インテグレーション設定に以下を追加してください。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+
+export default defineConfig({
+  // ...
+  integrations: [
+    mdx({
+      optimize: true,
+    }),
+  ],
+});
+```
+
+#### `ignoreElementNames`
+
+* **タイプ。** `string[]`
+
+<p><Since pkg="@astrojs/mdx" v="3.0.0" /></p>
+以前は `customComponentNames` として知られていました。
+
+`optimize` のオプションプロパティで、[components プロップを介してインポートされた MDX コンテンツに渡されるカスタムコンポーネント](/ja/guides/integrations-guide/mdx/#custom-components-with-imported-mdx)のような特定の要素名を MDX オプティマイザーが処理しないようにします。
+
+オプティマイザーはコンテンツを静的文字列に熱心に変換するため、これらのコンポーネントを最適化から除外する必要があります。これにより、動的にレンダリングされる必要があるカスタムコンポーネントが壊れてしまいます。
+
+例えば、以下の意図された MDX 出力は、すべての `"<h1>...</h1>"` の代わりに `<Heading>...</Heading>` です。
+
+```astro
+---
+import { Content, components } from '../content.mdx';
+import Heading from '../Heading.astro';
+---
+
+<Content components={{ ...components, h1: Heading }} />
+```
+
+`ignoreElementNames` プロパティを使用してこれの最適化を設定するには、カスタムコンポーネントとして扱うべき HTML 要素名の配列を指定します。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+
+export default defineConfig({
+  // ...
+  integrations: [
+    mdx({
+      optimize: {
+        // オプティマイザーが `h1` 要素を処理しないようにします
+        ignoreElementNames: ['h1'],
+      },
+    }),
+  ],
+});
+```
+
+MDX ファイルが [`export const components = { ... }` を使用してカスタムコンポーネントを設定](/ja/guides/integrations-guide/mdx/#assigning-custom-components-to-html-elements)している場合、このオプションを手動で設定する必要はありません。オプティマイザーは自動的にそれらを検出します。
+
+## 例
+
+* [Astro MDX スターターテンプレート](https://github.com/withastro/astro/tree/latest/examples/with-mdx)は、Astro プロジェクトで MDX ファイルを使用する方法を示しています。
+
+[astro-integration]: /ja/guides/integrations-guide/
+
+[astro-ui-frameworks]: /ja/guides/framework-components/#using-framework-components

@@ -1,0 +1,237 @@
+---
+type: integration
+title: '@astrojs/vue'
+description: '@astrojs/vueフレームワークインテグレーションを使用して、AstroプロジェクトでVue 3コンポーネントのサポートを拡張する方法を学びます。'
+sidebar:
+  label: Vue
+githubIntegrationURL: 'https://github.com/withastro/astro/tree/main/packages/integrations/vue/'
+category: renderer
+i18nReady: true
+---
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro';
+import Since from '~/components/Since.astro';
+
+この**[Astroインテグレーション][astro-integration]**により、[Vue 3](https://vuejs.org/)コンポーネントのレンダリングとクライアントサイドハイドレーションが可能になります。
+
+## インストール
+
+Astroには公式インテグレーションの設定を自動化する`astro add`コマンドが含まれています。必要に応じて、代わりに[インテグレーションを手動でインストール](#manual-install)することもできます。
+
+`@astrojs/vue`をインストールするには、プロジェクトディレクトリから以下を実行し、プロンプトに従ってください：
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npx astro add vue
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm astro add vue
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn astro add vue
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+問題が発生した場合は、[GitHubで遠慮なくご報告ください](https://github.com/withastro/astro/issues)。そして、以下の手動インストール手順をお試しください。
+
+### 手動インストール
+
+まず、`@astrojs/vue`パッケージをインストールします：
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install @astrojs/vue
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add @astrojs/vue
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add @astrojs/vue
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+
+ほとんどのパッケージマネージャーは、関連するピア依存関係もインストールします。Astroを起動したときに`Cannot find package 'vue'`（または同様）の警告が表示される場合は、Vueをインストールする必要があります：
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install vue
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add vue
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add vue
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+次に、`integrations`プロパティを使用して`astro.config.*`ファイルにインテグレーションを適用します：
+
+```js ins={2} ins="vue()" title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import vue from '@astrojs/vue';
+
+export default defineConfig({
+  // ...
+  integrations: [vue()],
+});
+```
+
+## 使い始める
+
+AstroでVueコンポーネントを初めて使用するには、[UIフレームワークドキュメント][astro-ui-frameworks]をご覧ください。そこでは以下について説明します：
+
+* 📦 フレームワークコンポーネントの読み込み方法
+* 💧 クライアントサイドハイドレーションオプション
+* 🤝 フレームワークを組み合わせたりネストしたりする機会
+
+## トラブルシューティング
+
+ヘルプが必要な場合は、[Discord](https://astro.build/chat)の`#support`チャンネルをご確認ください。フレンドリーなサポートチームメンバーがお手伝いします！
+
+インテグレーションの詳細については、[Astroインテグレーションドキュメント][astro-integration]もご確認ください。
+
+## コントリビューション
+
+このパッケージはAstroのコアチームによってメンテナンスされています。イシューやPRの投稿を歓迎します！
+
+[astro-integration]: /ja/guides/integrations-guide/
+
+[astro-ui-frameworks]: /ja/guides/framework-components/#using-framework-components
+
+## オプション
+
+このインテグレーションは`@vitejs/plugin-vue`によって駆動されています。Vueコンパイラーをカスタマイズするには、インテグレーションにオプションを提供できます。詳細については、`@vitejs/plugin-vue` [ドキュメント](https://www.npmjs.com/package/@vitejs/plugin-vue)をご覧ください。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import vue from '@astrojs/vue';
+
+export default defineConfig({
+  // ...
+  integrations: [
+    vue({
+      template: {
+        compilerOptions: {
+          // ion-で始まるタグをカスタム要素として扱う
+          isCustomElement: (tag) => tag.startsWith('ion-'),
+        },
+      },
+      // ...
+    }),
+  ],
+});
+```
+
+### appEntrypoint
+
+`appEntrypoint`オプションをルート相対のインポート指定子（例：`appEntrypoint: "/src/pages/_app"`）に設定することで、Vue `app`インスタンスを拡張できます。
+
+このファイルのデフォルトエクスポートは、レンダリング前にVue `App`インスタンスを受け取る関数である必要があり、[カスタムVueプラグイン](https://vuejs.org/guide/reusability/plugins.html)の使用、`app.use`、およびその他の高度なユースケース向けのカスタマイズが可能になります。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import vue from '@astrojs/vue';
+
+export default defineConfig({
+  // ...
+  integrations: [vue({ appEntrypoint: '/src/pages/_app' })],
+});
+```
+
+```ts title="src/pages/_app.ts"
+import type { App } from 'vue';
+import i18nPlugin from 'my-vue-i18n-plugin';
+
+export default (app: App) => {
+  app.use(i18nPlugin);
+};
+```
+
+### jsx
+
+`jsx: true`を設定することで、Vue JSXを使用できます。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import vue from '@astrojs/vue';
+
+export default defineConfig({
+  // ...
+  integrations: [vue({ jsx: true })],
+});
+```
+
+これにより、VueとVue JSXの両方のコンポーネントのレンダリングが可能になります。Vue JSXコンパイラーをカスタマイズするには、ブール値の代わりにオプションオブジェクトを渡します。詳細については、`@vitejs/plugin-vue-jsx` [ドキュメント](https://www.npmjs.com/package/@vitejs/plugin-vue-jsx)をご覧ください。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import vue from '@astrojs/vue';
+
+export default defineConfig({
+  // ...
+  integrations: [
+    vue({
+      jsx: {
+        // ion-で始まるタグをカスタム要素として扱う
+        isCustomElement: (tag) => tag.startsWith('ion-'),
+      },
+    }),
+  ],
+});
+```
+
+### devtools
+
+<p><Since pkg="@astrojs/vue" v="4.2.0" /></p>
+
+`vue()`インテグレーション設定で`devtools: true`を含むオブジェクトを渡すことで、開発中に[Vue DevTools](https://devtools-next.vuejs.org/)を有効にできます：
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import vue from '@astrojs/vue';
+
+export default defineConfig({
+  // ...
+  integrations: [vue({ devtools: true })],
+});
+```
+
+#### Vue DevToolsのカスタマイズ
+
+<p><Since pkg="@astrojs/vue" v="4.3.0" /></p>
+
+より多くのカスタマイズが必要な場合は、代わりに[Vue DevTools Vite Plugin](https://devtools-next.vuejs.org/guide/vite-plugin#options)がサポートするオプションを渡すことができます。（注：`appendTo`はサポートされていません。）
+
+例えば、Visual Studio Codeを使用していない場合は、`launchEditor`を好みのエディターに設定できます：
+
+```js title="astro.config.mjs"
+import { defineConfig } from "astro/config";
+import vue from "@astrojs/vue";
+
+export default defineConfig({
+  // ...
+  integrations: [
+    vue({
+      devtools: { launchEditor: "webstorm" },
+    }),
+  ],
+});
+```

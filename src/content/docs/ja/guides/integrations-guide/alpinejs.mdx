@@ -1,0 +1,165 @@
+---
+type: integration
+title: '@astrojs/alpinejs'
+description: '@astrojs/alpinejs フレームワークインテグレーションを使用して、Astroプロジェクトでコンポーネントサポートを拡張する方法を学ぶ。'
+sidebar:
+  label: Alpine.js
+githubIntegrationURL: 'https://github.com/withastro/astro/tree/main/packages/integrations/alpinejs/'
+category: renderer
+i18nReady: true
+---
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro'
+
+この**[Astroインテグレーション][astro-integration]**は、[Alpine.js](https://alpinejs.dev/)をプロジェクトに追加し、ページのどこでもAlpine.jsを使用できるようにします。
+
+## インストール
+
+Astroには公式インテグレーションのセットアップを自動化する`astro add`コマンドが含まれています。お好みに応じて、代わりに[手動でインテグレーションをインストール](#手動インストール)することもできます。
+
+`@astrojs/alpinejs`をインストールするには、プロジェクトディレクトリから以下を実行し、プロンプトに従ってください：
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+    ```sh
+    npx astro add alpinejs
+    ```
+  </Fragment>
+  <Fragment slot="pnpm">
+    ```sh
+    pnpm astro add alpinejs
+    ```
+  </Fragment>
+  <Fragment slot="yarn">
+    ```sh
+    yarn astro add alpinejs
+    ```
+  </Fragment>
+</PackageManagerTabs>
+
+問題が発生した場合は、[GitHubで気軽に報告してください](https://github.com/withastro/astro/issues)。以下の手動インストール手順もお試しください。
+
+### 手動インストール
+
+まず、`@astrojs/alpinejs`パッケージをインストールします。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+    ```sh
+    npm install @astrojs/alpinejs
+    ```
+  </Fragment>
+  <Fragment slot="pnpm">
+    ```sh
+    pnpm add @astrojs/alpinejs
+    ```
+  </Fragment>
+  <Fragment slot="yarn">
+    ```sh
+    yarn add @astrojs/alpinejs
+    ```
+  </Fragment>
+</PackageManagerTabs>
+
+ほとんどのパッケージマネージャーは関連するピア依存関係 (peer dependencies) もインストールします。しかし、Astroを起動したときに「Cannot find package 'alpinejs'」（または類似の）警告が表示される場合は、Alpine.jsを手動でインストールする必要があります：
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install alpinejs @types/alpinejs
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add alpinejs @types/alpinejs
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add alpinejs @types/alpinejs
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+次に、`integrations`プロパティを使用して、インテグレーションを`astro.config.*`ファイルに適用します：
+
+```js ins="alpinejs()" title="astro.config.mjs" ins={2}
+import { defineConfig } from 'astro/config';
+import alpinejs from '@astrojs/alpinejs';
+
+export default defineConfig({
+  // ...
+  integrations: [alpinejs()],
+});
+```
+
+## 設定オプション
+
+### `entrypoint`
+
+`entrypoint`オプションをルート相対インポート指定子（例：`entrypoint: "/src/entrypoint"`）に設定することで、Alpineを拡張できます。
+
+このファイルのデフォルトエクスポートは、開始前にAlpineインスタンスを受け取る関数である必要があります。これにより、高度な使用例でカスタムディレクティブ、プラグイン、その他のカスタマイゼーションを使用できます。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import alpine from '@astrojs/alpinejs';
+
+export default defineConfig({
+  // ...
+  integrations: [alpine({ entrypoint: '/src/entrypoint' })],
+});
+```
+
+```js title="src/entrypoint.ts"
+import type { Alpine } from 'alpinejs'
+import intersect from '@alpinejs/intersect'
+
+export default (Alpine: Alpine) => {
+    Alpine.plugin(intersect)
+}
+```
+
+## 使用方法
+
+インテグレーションがインストールされると、任意のAstroコンポーネント内で[Alpine.js](https://alpinejs.dev/)ディレクティブと構文を使用できます。Alpine.jsスクリプトは自動的に追加され、ウェブサイトのすべてのページで有効になるため、クライアントディレクティブは必要ありません。プラグインスクリプトをページの`<head>`に追加してください。
+
+以下の例では、[AlpineのCollapseプラグイン](https://alpinejs.dev/plugins/collapse)を追加して、段落テキストを展開・折りたたみできるようにしています：
+
+```astro title="src/pages/index.astro" ins={6} ins="x-collapse"
+---
+---
+<html>
+	<head>
+		<!-- ... -->
+		<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+	</head>
+	<body>
+    <!-- ... -->
+		<div x-data="{ expanded: false }">
+			<button @click="expanded = ! expanded">Toggle Content</button>
+
+			<p id="foo" x-show="expanded" x-collapse>
+        Lorem ipsum
+			</p>
+		</div>
+	</body>
+</html>
+```
+
+## TypeScriptのIntelliSense
+
+`@astrojs/alpine`インテグレーションは、グローバルのwindowオブジェクトに`Alpine`を追加します。IDEの自動補完のために、`src/env.d.ts`に以下を追加してください：
+
+```ts title="src/env.d.ts"
+interface Window {
+  Alpine: import('alpinejs').Alpine;
+}
+```
+
+## 例
+
+* [Astro Alpine.jsの例](https://github.com/withastro/astro/tree/main/examples/framework-alpine)では、AstroプロジェクトでAlpine.jsを使用する方法を示しています。
+
+[astro-integration]: /ja/guides/integrations-guide/
+
+[astro-ui-frameworks]: /ja/guides/framework-components/#using-framework-components

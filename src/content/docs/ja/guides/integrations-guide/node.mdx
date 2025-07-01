@@ -1,0 +1,229 @@
+---
+type: integration
+title: '@astrojs/node'
+description: '@astrojs/nodeアダプターを使用してAstroプロジェクトをデプロイする方法を学びます。'
+sidebar:
+  label: Node
+githubIntegrationURL: 'https://github.com/withastro/astro/tree/main/packages/integrations/node/'
+category: adapter
+i18nReady: true
+---
+
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro'
+
+このアダプターにより、Astroの[オンデマンドレンダリングルートと機能](/ja/guides/on-demand-rendering/)を、[サーバーアイランド](/ja/guides/server-islands/)、[アクション](/ja/guides/actions/)、[セッション](/ja/guides/sessions/)を含むNodeターゲットにデプロイできます。
+
+静的サイトビルダーとしてAstroを使用している場合、アダプターは必要ありません。
+
+## Astro Node.jsを使う理由
+
+[Node.js](https://nodejs.org/en/)は、サーバーサイドコード用のJavaScriptランタイムです。@astrojs/nodeは、スタンドアロンモードまたは[Express](https://expressjs.com/)などの他のHTTPサーバーのミドルウェアとして使用できます。
+
+## インストール
+
+Astroには、公式インテグレーションの設定を自動化する`astro add`コマンドが含まれています。お好みに応じて、代わりに[手動でインテグレーションをインストール](#manual-install)することもできます。
+
+`astro add`コマンドを使用してNodeアダプターを追加し、Astroプロジェクトでオンデマンドレンダリングを有効にします。
+これにより、`@astrojs/node`がインストールされ、`astro.config.*`ファイルに適切な変更が一度に行われます。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npx astro add node
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm astro add node
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn astro add node
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+これで、[ページごとにオンデマンドレンダリングを有効化](/ja/guides/on-demand-rendering/#enabling-on-demand-rendering)するか、ビルド出力設定を`output: 'server'`に設定して[デフォルトですべてのページをサーバーレンダリング](/ja/guides/on-demand-rendering/#server-mode)できます。
+
+### 手動インストール
+
+まず、お好みのパッケージマネージャーを使用して、プロジェクトの依存関係にNodeアダプターを追加します。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install @astrojs/node
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add @astrojs/node
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add @astrojs/node
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+次に、`astro.config.*`ファイルにアダプターを追加します。
+
+```js title="astro.config.mjs" ins={2,5-7}
+import { defineConfig } from 'astro/config';
+import node from '@astrojs/node';
+
+export default defineConfig({
+  adapter: node({
+    mode: 'standalone',
+  }),
+});
+```
+
+## 設定
+
+@astrojs/nodeは、アダプター関数にオプションを渡すことで設定できます。以下のオプションが利用可能です。
+
+### `mode`
+<p>
+**型。** `'middleware' | 'standalone'` <br />
+</p>
+
+アダプターが`middleware`または`standalone`モードでビルドするかを制御します。
+
+* `middleware`モードでは、ビルド出力をExpress.jsやFastifyなどの別のNode.jsサーバーのミドルウェアとして使用できます。
+* `standalone`モードでは、エントリモジュールが実行されたときに自動的に開始するサーバーをビルドします。これにより、追加のコードを必要とせずに、より簡単にビルドをホストにデプロイできます。
+
+```js title="astro.config.mjs" {6}
+import { defineConfig } from 'astro/config';
+import node from '@astrojs/node';
+
+export default defineConfig({
+  adapter: node({
+    mode: 'middleware',
+  }),
+});
+```
+
+## 使用方法
+
+まず、[ビルドを実行](/ja/guides/deploy/#building-your-site-locally)します。選択した`mode`（上記参照）に応じて、以下の適切な手順に従ってください。
+
+### ミドルウェア
+
+サーバーエントリポイントは、デフォルトで`./dist/server/entry.mjs`にビルドされます。このモジュールは、Node`request`および`response`オブジェクトをサポートするあらゆるフレームワークで使用できる`handler`関数をエクスポートします。
+
+例えば、Expressの場合。
+
+```js title="run-server.mjs"
+import express from 'express';
+import { handler as ssrHandler } from './dist/server/entry.mjs';
+
+const app = express();
+// astro.config.mjsの`base`オプションに基づいて変更してください。
+// これらは一致する必要があります。デフォルト値は"/"です。
+const base = '/';
+app.use(base, express.static('dist/client/'));
+app.use(ssrHandler);
+
+app.listen(8080);
+```
+
+または、Fastify（>4）の場合。
+
+```js title="run-server.mjs"
+import Fastify from 'fastify';
+import fastifyMiddie from '@fastify/middie';
+import fastifyStatic from '@fastify/static';
+import { fileURLToPath } from 'node:url';
+import { handler as ssrHandler } from './dist/server/entry.mjs';
+
+const app = Fastify({ logger: true });
+
+await app
+  .register(fastifyStatic, {
+    root: fileURLToPath(new URL('./dist/client', import.meta.url)),
+  })
+  .register(fastifyMiddie);
+app.use(ssrHandler);
+
+app.listen({ port: 8080 });
+```
+
+さらに、`Astro.locals`またはAstroミドルウェアでアクセスできるオブジェクトを渡すこともできます。
+
+```js title="run-server.mjs"
+import express from 'express';
+import { handler as ssrHandler } from './dist/server/entry.mjs';
+
+const app = express();
+app.use(express.static('dist/client/'));
+app.use((req, res, next) => {
+  const locals = {
+    title: 'New title',
+  };
+
+  ssrHandler(req, res, next, locals);
+});
+
+app.listen(8080);
+```
+
+ミドルウェアモードはファイルサービングを行わないことに注意してください。HTTPフレームワークで設定する必要があります。デフォルトでは、クライアントアセットは`./dist/client/`に書き込まれます。
+
+### スタンドアロン
+
+スタンドアロンモードでは、サーバーエントリポイントが実行されるとサーバーが開始されます。デフォルトでは`./dist/server/entry.mjs`にビルドされます。次のコマンドで実行できます。
+
+```sh
+node ./dist/server/entry.mjs
+```
+
+スタンドアロンモードでは、サーバーはページとAPIルートに加えて、ファイルサービングも処理します。
+
+#### カスタムホストとポート
+
+実行時に環境変数として渡すことで、スタンドアロンサーバーが実行されるホストとポートを上書きできます。
+
+```sh
+HOST=0.0.0.0 PORT=4321 node ./dist/server/entry.mjs
+```
+
+#### HTTPS
+
+デフォルトでは、スタンドアロンサーバーはHTTPを使用します。これは、HTTPSを行うプロキシサーバーが前にある場合にうまく機能します。スタンドアロンサーバー自体でHTTPSを実行する必要がある場合は、SSLキーと証明書を提供する必要があります。
+
+環境変数`SERVER_CERT_PATH`と`SERVER_KEY_PATH`を介してキーと証明書のパスを渡すことができます。bashでの渡し方は次のとおりです。
+
+```bash
+SERVER_KEY_PATH=./private/key.pem SERVER_CERT_PATH=./private/cert.pem node ./dist/server/entry.mjs
+```
+
+#### ランタイム環境変数
+
+ビルドプロセスの実行時に環境変数を含む`.env`ファイルが存在する場合、これらの値は静的Webサイトを生成するときと同様に、出力にハードコードされます。
+
+ビルド中、ランタイム変数は`.env`ファイルに存在してはならず、Astroに実行時に期待するすべての環境変数を提供する必要があります。`VARIABLE_1=placeholder astro build`。これは、ビルドされたアプリケーションが実行されるときに実際の値が利用可能になることをAstroに通知します。プレースホルダー値はビルドプロセスによって無視され、Astroは実行時に提供された値を使用します。
+
+複数のランタイム変数の場合、それらを`.env`とは別のファイル（例。`.env.runtime`）に保存します。次のコマンドでビルドを開始します。
+
+```sh
+export $(cat .env.runtime) && astro build
+```
+
+#### アセット
+
+スタンドアロンモードでは、`dist/client/`フォルダー内のアセットはスタンドアロンサーバーを介して提供されます。これらのアセットをCDNにデプロイしている場合、サーバーが実際にそれらを提供することはありません。しかし、イントラネットサイトなどの場合、アプリケーションサーバーから直接静的アセットを提供することは問題ありません。
+
+`dist/client/_astro/`フォルダー内のアセットは、Astroがビルドしたものです。これらのアセットはすべてハッシュで命名されているため、長いキャッシュヘッダーを与えることができます。内部的に、アダプターはこれらのアセットに対してこのヘッダーを追加します。
+
+```
+Cache-Control: public, max-age=31536000, immutable
+```
+
+## セッション
+
+Astro [セッション API](/ja/guides/sessions/)により、リクエスト間でユーザーデータを簡単に保存できます。これは、ユーザーデータや設定、ショッピングカート、認証資格情報などに使用できます。Cookieストレージとは異なり、データにサイズ制限はなく、異なるデバイスで復元できます。
+
+Nodeアダプターを使用する場合、Astroはセッションストレージにローカルファイルシステムを使用します。別のセッションストレージドライバーを使用したい場合は、Astro設定で指定できます。詳細については、[`session`設定リファレンス](/ja/reference/configuration-reference/#sessiondriver)を参照してください。

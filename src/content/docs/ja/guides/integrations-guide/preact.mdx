@@ -1,0 +1,228 @@
+---
+type: integration
+title: '@astrojs/preact'
+description: "@astrojs/preactフレームワークインテグレーションを使用してAstroプロジェクトのコンポーネントサポートを拡張する方法を学びます。"
+sidebar:
+  label: Preact
+githubIntegrationURL: 'https://github.com/withastro/astro/tree/main/packages/integrations/preact/'
+category: renderer
+i18nReady: true
+---
+
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro'
+import Since from '~/components/Since.astro';
+
+この **[Astroインテグレーション][astro-integration]** は、[Preact](https://preactjs.com/)コンポーネントのレンダリングとクライアントサイドハイドレーションを可能にします。
+
+## Preactを使う理由
+
+Preactは、ウェブ用のインタラクティブなUIコンポーネントを構築するためのライブラリです。JavaScriptを使用してサイトにインタラクティブな機能を構築したい場合、ブラウザAPIを直接使用するよりも、Preactのコンポーネント形式を使用することを好むかもしれません。
+
+Preactは以前にReactを使用したことがある場合にも優れた選択肢です。PreactはReactと同じAPIを提供しますが、3kBという遥かに小さなパッケージサイズです。`compat`設定オプション（下記参照）を使用して、多くのReactコンポーネントのレンダリングもサポートしています。
+
+**このインテグレーションを使用する前にPreactについて詳しく学びたいですか？**\
+Preactのウェブサイトのインタラクティブチュートリアル["Learn Preact"](https://preactjs.com/tutorial)をチェックしてください。
+
+## インストール
+
+Astroには、公式インテグレーションのセットアップを自動化する`astro add`コマンドがあります。お好みに応じて、代わりに[手動でインテグレーションをインストール](#手動インストール)することもできます。
+
+`@astrojs/preact`をインストールするには、プロジェクトディレクトリから以下のコマンドを実行し、プロンプトに従ってください。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npx astro add preact
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm astro add preact
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn astro add preact
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+問題が発生した場合は、[GitHubで報告](https://github.com/withastro/astro/issues)していただき、以下の手動インストール手順をお試しください。
+
+### 手動インストール
+
+まず、`@astrojs/preact`パッケージをインストールします。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install @astrojs/preact
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add @astrojs/preact
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add @astrojs/preact
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+ほとんどのパッケージマネージャーは、関連するピア依存関係もインストールします。Astroを起動時に`Cannot find package 'preact'`（または類似の）警告が表示される場合は、Preactをインストールする必要があります。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install preact
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add preact
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add preact
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+次に、`integrations`プロパティを使用して`astro.config.*`ファイルにインテグレーションを適用します。
+
+```js title="astro.config.mjs" ins={2} ins="preact()"
+import { defineConfig } from 'astro/config';
+import preact from '@astrojs/preact';
+
+export default defineConfig({
+  // ...
+  integrations: [preact()],
+});
+```
+
+そして、`tsconfig.json`ファイルに以下のコードを追加します。
+
+```json title="tsconfig.json" ins={5-8}
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  }
+}
+```
+
+## 使用方法
+
+AstroでPreactコンポーネントを使用するには、[UIフレームワークドキュメント][astro-ui-frameworks]をご覧ください。以下について学べます。
+
+* 📦 フレームワークコンポーネントがどのように読み込まれるか
+* 💧 クライアントサイドハイドレーションオプション
+* 🤝 フレームワークを組み合わせてネストする機会
+
+インテグレーションについて詳しくは、[Astroインテグレーションドキュメント][astro-integration]も確認してください。
+
+## 設定
+
+Astro Preactインテグレーションは、Preactコンポーネントのレンダリング方法を処理し、独自のオプションがあります。これらは、プロジェクトのインテグレーション設定が存在する`astro.config.mjs`ファイルで変更します。
+
+基本的な使用では、Preactインテグレーションを設定する必要はありません。
+
+### compat
+
+`preact/compat`（Preactの互換性レイヤー）を有効にして、ユーザーのウェブブラウザーにReactの大きなライブラリをインストールまたは配布することなくReactコンポーネントをレンダリングできます。
+
+これを行うには、Preactインテグレーションにオブジェクトを渡し、`compat: true`を設定します。
+
+```js title="astro.config.mjs" "compat: true"
+import { defineConfig } from 'astro/config';
+import preact from '@astrojs/preact';
+
+export default defineConfig({
+  integrations: [preact({ compat: true })],
+});
+```
+
+`compat`オプションを有効にすると、Preactインテグレーションはプロジェクト内のPreactコンポーネントだけでなくReactコンポーネントもレンダリングし、PreactコンポーネントでReactコンポーネントをインポートすることもできます。詳細については、Preactウェブサイトの["Switching to Preact (from React)"](https://preactjs.com/guide/v10/switching-to-preact)をお読みください。
+
+Reactコンポーネントライブラリをインポートする際、`react`および`react-dom`の依存関係を`preact/compat`として交換するには、[`overrides`](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#overrides)を使用できます。
+
+```json title="package.json"
+{
+  "overrides": {
+    "react": "npm:@preact/compat@latest",
+    "react-dom": "npm:@preact/compat@latest"
+  }
+}
+```
+
+それぞれのオーバーライド機能については、[`pnpm`オーバーライド](https://pnpm.io/package_json#pnpmoverrides)および[`yarn`解決](https://yarnpkg.com/configuration/manifest#resolutions)のドキュメントをご確認ください。
+
+。。。note
+現在、`compat`オプションはESMとしてコードをエクスポートするReactライブラリでのみ動作します。ビルド時にエラーが発生した場合は、`astro.config.mjs`ファイルの`vite.ssr.noExternal: ['the-react-library']`にライブラリを追加してみてください。
+。。。
+
+### devtools
+
+<p><Since pkg="@astrojs/preact" v="3.3.0" /></p>
+
+`preact()`インテグレーション設定に`devtools: true`を含むオブジェクトを渡すことで、開発時に[Preact devtools](https://preactjs.github.io/preact-devtools/)を有効にできます。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import preact from '@astrojs/preact';
+
+export default defineConfig({
+  // ...
+  integrations: [preact({ devtools: true })],
+});
+```
+
+## オプション
+
+### 複数のJSXフレームワークの組み合わせ
+
+同じプロジェクトで複数のJSXフレームワーク（React、Preact、Solid）を使用している場合、Astroは各コンポーネントに対してどのJSXフレームワーク固有の変換を使用すべきかを決定する必要があります。プロジェクトに1つのJSXフレームワークインテグレーションのみを追加した場合、追加の設定は必要ありません。
+
+`include`（必須）および`exclude`（任意）設定オプションを使用して、どのファイルがどのフレームワークに属するかを指定します。使用している各フレームワークに対して、`include`にファイルやフォルダーの配列を提供します。ワイルドカードを使用して、複数のファイルパスを含めることができます。
+
+共通のフレームワークコンポーネントを同じフォルダー（例。`/components/react/`および`/components/solid/`）に配置して、includeの指定を簡単にすることをお勧めしますが、これは必須ではありません。
+
+```js title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import preact from '@astrojs/preact';
+import react from '@astrojs/react';
+import svelte from '@astrojs/svelte';
+import vue from '@astrojs/vue';
+import solid from '@astrojs/solid-js';
+
+export default defineConfig({
+  // さまざまな種類のコンポーネントをサポートするために多くのフレームワークを有効にします。
+  // 単一のJSXフレームワークのみを使用している場合、`include`は必要ありません！
+  integrations: [
+    preact({
+      include: ['**/preact/*'],
+    }),
+    react({
+      include: ['**/react/*'],
+    }),
+    solid({
+      include: ['**/solid/*'],
+    }),
+  ],
+});
+```
+
+## 例
+
+* [Astro Preactの例](https://github.com/withastro/astro/tree/latest/examples/framework-preact)は、AstroプロジェクトでインタラクティブなPreactコンポーネントを使用する方法を示しています。
+* [Astro Nanostoresの例](https://github.com/withastro/astro/tree/latest/examples/with-nanostores)は、Astroプロジェクトで異なるコンポーネント間、さらには異なるフレームワーク間で状態を共有する方法を示しています。
+
+[astro-integration]: /ja/guides/integrations-guide/
+
+[astro-ui-frameworks]: /ja/guides/framework-components/#フレームワークコンポーネントを利用

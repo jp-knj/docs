@@ -1,0 +1,456 @@
+---
+type: integration
+title: '@astrojs/vercel'
+description: '@astrojs/vercelアダプターを使用してAstroプロジェクトをデプロイする方法を学びます。'
+sidebar:
+  label: Vercel
+githubIntegrationURL: 'https://github.com/withastro/astro/tree/main/packages/integrations/vercel/'
+category: adapter
+i18nReady: true
+---
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro';
+import Since from '~/components/Since.astro';
+import ReadMore from '~/components/ReadMore.astro'
+import { Steps } from '@astrojs/starlight/components';
+
+このアダプターを使用すると、Astroの[オンデマンドレンダリングされたルートと機能](/ja/guides/on-demand-rendering/)を[Vercel](https://www.vercel.com/)にデプロイできます。これには[サーバーアイランド](/ja/guides/server-islands/)、[アクション](/ja/guides/actions/)、[セッション](/ja/guides/sessions/)が含まれます。
+
+Astroを静的サイトビルダーとして使用している場合、追加のVercelサービス（例：[Vercel Web Analytics](https://vercel.com/docs/analytics)、[Vercel Image Optimization](https://vercel.com/docs/image-optimization)）を使用する場合のみこのアダプターが必要です。それ以外の場合、静的サイトをデプロイするためにアダプターは必要ありません。
+
+Astroサイトのデプロイ方法については、[Vercelデプロイガイド](/ja/guides/deploy/vercel/)をご覧ください。
+
+## なぜAstro Vercel？
+
+[Vercel](https://www.vercel.com/)は、GitHubリポジトリに直接接続してサイトをホストできるデプロイプラットフォームです。このアダプターは、Vercelでのデプロイメント用にプロジェクトを準備するためのAstroビルドプロセスを強化します。
+
+## インストール
+
+Astroには公式インテグレーションのセットアップを自動化する`astro add`コマンドが含まれています。お好みに応じて、代わりに[手動でインテグレーションをインストール](#手動インストール)することもできます。
+
+以下の`astro add`コマンドでVercelアダプターを追加して、Astroプロジェクトでオンデマンドレンダリングを有効にします。これにより、`@astrojs/vercel`がインストールされ、`astro.config.mjs`ファイルに適切な変更が一度に行われます。
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npx astro add vercel
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm astro add vercel
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn astro add vercel
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+これで、[ページ単位でオンデマンドレンダリングを有効](/ja/guides/on-demand-rendering/#オンデマンドレンダリングの有効化)にするか、ビルド出力設定を`output: 'server'`に設定して[デフォルトですべてのページをサーバーレンダリング](/ja/guides/on-demand-rendering/#サーバーモード)することができます。
+
+### 手動インストール
+
+まず、お好みのパッケージマネージャーを使用してプロジェクトの依存関係に`@astrojs/vercel`アダプターを追加します：
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```sh
+  npm install @astrojs/vercel
+  ```
+  </Fragment>
+  <Fragment slot="pnpm">
+  ```sh
+  pnpm add @astrojs/vercel
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```sh
+  yarn add @astrojs/vercel
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+次に、`astro.config.*`ファイルにアダプターを追加します：
+
+```js title="astro.config.mjs" ins={2, 6}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel(),
+});
+```
+
+## 使用方法
+
+<ReadMore>[プロジェクトをVercelにデプロイする](/ja/guides/deploy/vercel/)詳細についてはこちらをご覧ください。</ReadMore>
+
+CLI（`vercel deploy`）でデプロイするか、[Vercelダッシュボード](https://vercel.com/)で新しいリポジトリを接続してデプロイできます。または、ローカルでプロダクションビルドを作成することもできます：
+
+```sh
+astro build
+vercel deploy --prebuilt
+```
+
+## 設定
+
+このアダプターを設定するには、`astro.config.mjs`の`vercel()`関数呼び出しにオブジェクトを渡します：
+
+### `webAnalytics`
+
+**型：** `VercelWebAnalyticsConfig`<br/>
+**利用可能：** サーバーレス、Static<br/>
+<Since v="3.8.0" pkg="@astrojs/vercel" />
+
+`@vercel/analytics@1.3.x`以前では、Astro設定で`webAnalytics: { enabled: true }`を設定して、すべてのページにVercelのトラッキングスクリプトを挿入できます。
+
+`@vercel/analytics@1.4.0`以降では、代わりにVercelのAnalyticsコンポーネントを使用して[Vercel Web Analytics](https://vercel.com/docs/concepts/analytics)を有効にしてください。
+
+```js title="astro.config.mjs" ins={7-9}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+  }),
+});
+```
+
+### `imagesConfig`
+
+**型：** `VercelImageConfig`<br/>
+**利用可能：** サーバーレス、Static
+<Since v="3.3.0" pkg="@astrojs/vercel" />
+
+[VercelのImage Optimization API](https://vercel.com/docs/concepts/image-optimization)の設定オプション。サポートされているパラメーターの完全なリストについては、[Vercelの画像設定ドキュメント](https://vercel.com/docs/build-output-api/v3/configuration#images)をご覧ください。
+
+`domains`と`remotePatterns`プロパティは、[Astroの対応する`image`設定](/ja/reference/configuration-reference/#image-options)を使用して自動的に入力されます。
+
+```js title="astro.config.mjs" ins={8-10}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  output: 'static',
+  adapter: vercel({
+    imagesConfig: {
+      sizes: [320, 640, 1280],
+    },
+  }),
+});
+```
+
+### `imageService`
+
+**型：** `boolean`<br/>
+**利用可能：** サーバーレス、Static
+<Since v="3.3.0" pkg="@astrojs/vercel" />
+
+有効にすると、Vercel Image Optimization APIを使用した[画像サービス](/ja/reference/image-service-reference/)がプロダクションで自動的に設定され、使用されます。開発時には、[`devImageService`](#devimageservice)で指定された画像サービスが代わりに使用されます。
+
+```js title="astro.config.mjs" ins={8}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  output: 'static',
+  adapter: vercel({
+    imageService: true,
+  }),
+});
+```
+
+```astro title="src/pages/index.astro"
+---
+import { Image } from 'astro:assets';
+import astroLogo from '../assets/logo.png';
+---
+
+<!-- このコンポーネント -->
+<Image src={astroLogo} alt="My super logo!" />
+
+<!-- は以下のHTMLになります -->
+<img
+  src="/_vercel/image?url=_astro/logo.hash.png&w=...&q=..."
+  alt="My super logo!"
+  loading="lazy"
+  decoding="async"
+  width="..."
+  height="..."
+/>
+```
+
+### `devImageService`
+
+**型：** `'sharp' | string`<br/>
+**利用可能：** サーバーレス、Static
+<Since v="3.8.0" pkg="@astrojs/vercel" />
+**デフォルト**: `sharp`
+
+[imageService](#imageservice)が有効な場合に、開発時に使用する画像サービスを設定できます。これは、開発マシンでSharpの依存関係をインストールできないが、Squooshなどの他の画像サービスを使用して開発環境で画像をプレビューしたい場合に便利です。ビルドは影響を受けず、常にVercelのImage Optimizationを使用します。
+
+Astroの組み込みサービスの代わりにカスタム画像サービスを使用するために、任意の値に設定することもできます。
+
+```js title="astro.config.mjs" ins={7-8}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel({
+    imageService: true,
+    devImageService: 'sharp',
+  }),
+});
+```
+
+### `isr`
+
+**型：** <code>boolean | VercelISRConfig</code><br/>
+**利用可能：** サーバーレス
+<Since v="7.2.0" pkg="@astrojs/vercel" />
+**デフォルト**: `false`
+
+プロジェクトを[ISR（Incremental Static Regeneration）](https://vercel.com/docs/incremental-static-regeneration)関数としてデプロイできます。これにより、最初のリクエスト後に、オンデマンドレンダリングされたページがプリレンダリングされたページと同じ方法でキャッシュされます。
+
+この機能を有効にするには、`astro.config.mjs`のVercelアダプター設定で`isr`をtrueに設定します：
+
+```js title="astro.config.mjs" ins={7}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel({
+    isr: true,
+  }),
+});
+```
+
+ISR関数のリクエストには、静的モードでの[リクエスト](/ja/reference/api-reference/#request)と同様に、検索パラメーターは含まれないことに注意してください。
+
+#### ISRキャッシュの無効化
+
+デフォルトでは、ISR関数はデプロイメントの期間中キャッシュされます。有効期限を設定するか、特定のルートを完全にキャッシュから除外することで、キャッシュをさらに制御できます。
+
+##### 時間ベースの無効化
+
+秒単位で`expiration`値を設定することで、ルートをキャッシュする時間の長さを変更できます：
+
+```js title="astro.config.mjs" {7-10}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel({
+    isr: {
+      // 最初のリクエストですべてのページをキャッシュし、1日間保存
+      expiration: 60 * 60 * 24,
+    },
+  }),
+});
+```
+
+##### パスをキャッシュから除外
+
+Vercelの[ドラフトモード](https://vercel.com/docs/build-output-api/v3/features#draft-mode)や[オンデマンドIncremental Static Regeneration（ISR）](https://vercel.com/docs/build-output-api/v3/features#on-demand-incremental-static-regeneration-isr)を実装するには、バイパストークンを作成し、キャッシュから除外するルートと共に`isr`設定に提供します：
+
+```js title="astro.config.mjs" {6-15}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+    adapter: vercel({
+        isr: {
+            // 作成する秘密のランダム文字列
+            bypassToken: "005556d774a8",
+            // 常に新鮮に提供されるパス
+            exclude: [
+              '/preview', 
+              '/auth/[page]',
+              /^\/api\/.+/ // @astrojs/vercel@v8.1.0以降で正規表現がサポートされています
+            ]
+        }
+    })
+})
+```
+
+### `includeFiles`
+
+**型：** `string[]`<br/>
+**利用可能：** サーバーレス
+
+このプロパティを使用して、関数にバンドルするファイルを強制します。これは、不足しているファイルに気づいた場合に役立ちます。
+
+```js title="astro.config.mjs" ins={7}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel({
+    includeFiles: ['./my-data.json'],
+  }),
+});
+```
+
+### `excludeFiles`
+
+**型：** `string[]`<br/>
+**利用可能：** サーバーレス
+
+このプロパティを使用して、バンドルプロセスから通常は含まれるファイルを除外します。
+
+```js title="astro.config.mjs" ins={7}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel({
+    excludeFiles: ['./src/some_big_file.jpg'],
+  }),
+});
+```
+
+### `maxDuration`
+
+**型：** `number`<br/>
+**利用可能：** サーバーレス
+
+このプロパティを使用して、サーバーレス関数がタイムアウトするまでに実行できる最大期間（秒単位）を延長または制限します。アカウントプランのデフォルトと最大制限については、[Vercelドキュメント](https://vercel.com/docs/functions/serverless-functions/runtimes#maxduration)をご覧ください。
+
+```js title="astro.config.mjs" ins={7}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+// ...
+  adapter: vercel({
+    maxDuration: 60
+  }),
+});
+```
+
+### `skewProtection`
+
+**型：** `boolean`<br/>
+**利用可能：** サーバーレス
+<Since pkg="@astrojs/vercel" v="7.6.0" />
+
+このプロパティを使用して[Vercel Skew protection](https://vercel.com/docs/deployments/skew-protection)を有効にします（Vercel ProおよびEnterpriseアカウントで利用可能）。
+
+```js title="astro.config.mjs" ins={7}
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+// ...
+  adapter: vercel({
+    skewProtection: true
+  }),
+});
+```
+
+### Vercel Edge FunctionsでAstroミドルウェアを実行
+
+`@astrojs/vercel`アダプターは、コードベースのAstroミドルウェアから[エッジ関数](https://vercel.com/docs/functions/edge-functions)を作成できます。`edgeMiddleware`が有効な場合、エッジ関数は静的アセット、プリレンダリングされたページ、オンデマンドレンダリングされたページを含むすべてのリクエストに対してミドルウェアコードを実行します。
+
+オンデマンドレンダリングされたページでは、`context.locals`オブジェクトはJSONを使用してシリアル化され、レンダリングを実行するサーバーレス関数のヘッダーで送信されます。セキュリティ対策として、サーバーレス関数は生成されたエッジ関数からのリクエストでない限り、`403 Forbidden`レスポンスでリクエストの提供を拒否します。
+
+これはオプトイン機能です。有効にするには、`edgeMiddleware`をtrueに設定します：
+
+```js title="astro.config.mjs" "edgeMiddleware: true"
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  // ...
+  adapter: vercel({
+    edgeMiddleware: true,
+  }),
+});
+```
+
+エッジミドルウェアは`ctx.locals.vercel.edge`としてVercelの[`RequestContext`](https://vercel.com/docs/functions/edge-middleware/middleware-api#requestcontext)にアクセスできます。TypeScriptを使用している場合は、`src/env.d.ts`を更新して`EdgeLocals`を使用することで適切な型を取得できます：
+
+```ts
+type EdgeLocals = import('@astrojs/vercel').EdgeLocals
+
+declare namespace App {
+  interface Locals extends EdgeLocals {
+    // ...
+  }
+}
+```
+
+### Node.jsバージョンサポート
+
+`@astrojs/vercel`アダプターは、VercelでAstroプロジェクトをデプロイするための特定のNode.jsバージョンをサポートしています。VercelでサポートされているNode.jsバージョンを表示するには、プロジェクトの設定タブをクリックし、「Node.js Version」セクションまでスクロールダウンしてください。
+
+詳細については、[Vercelドキュメント](https://vercel.com/docs/functions/serverless-functions/runtimes/node-js#default-and-available-versions)をご覧ください。
+
+### セッション
+
+Astro [Sessions API](/ja/guides/sessions/)を使用すると、リクエスト間でユーザーデータを簡単に保存できます。これは、ユーザーデータと設定、ショッピングカート、認証資格情報などに使用できます。クッキーストレージとは異なり、データサイズに制限がなく、異なるデバイスで復元できます。
+
+Vercelでセッションを使用する場合、セッションストレージ用に[ドライバーを設定](/ja/reference/configuration-reference/#sessiondriver)する必要があります。[Vercelマーケットプレイス](https://vercel.com/marketplace?category=storage)からストレージプロバイダーをインストールできます。
+
+例えば、[Redisインテグレーション](https://vercel.com/marketplace?category=storage&search=redis)をインストールしてサイトにデータベースをリンクした場合：
+
+<Steps>
+
+1. `ioredis`パッケージをインストールします：
+   <PackageManagerTabs>
+     <Fragment slot="npm">
+     ```sh
+     npm install ioredis
+     ```
+     </Fragment>
+     <Fragment slot="pnpm">
+     ```sh
+     pnpm install ioredis
+     ```
+     </Fragment>
+     <Fragment slot="yarn">
+     ```sh
+     yarn add ioredis
+     ```
+     </Fragment>
+   </PackageManagerTabs>
+
+2. [Vercel CLI](https://vercel.com/docs/cli)を使用して環境変数を読み込みます：
+   ```sh
+   vercel env pull .env.local
+   ```
+   これにより、ローカルで開発する際にRedisデータベースに接続するために必要な環境変数を含む`.env.local`ファイルがプロジェクトルートに作成されます。
+
+3. セッションドライバーを設定します：
+
+    ```js title="astro.config.mjs" ins={6-11}
+    import { defineConfig } from 'astro/config';
+    import vercel from '@astrojs/vercel';
+
+    export default defineConfig({
+      adapter: vercel(),
+      session: {
+        driver: 'redis',
+        options: {
+          url: process.env.REDIS_URL,
+        },
+      },
+    });
+    ```
+
+</Steps>
+
+[astro-integration]: /ja/guides/integrations-guide/
