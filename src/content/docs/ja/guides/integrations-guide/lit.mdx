@@ -1,0 +1,21 @@
+---
+title: 'Lit'
+description: Litを使用して、Astroプロジェクトのコンポーネントサポートを拡張します。
+i18nReady: false
+---
+
+:::caution[非推奨]
+[Lit](https://lit.dev/)カスタム要素のオンデマンドレンダリングとクライアントサイドハイドレーションを有効にするこのAstroインテグレーションは、Astro 5.0で非推奨になりました。
+:::
+
+クライアントサイドのスクリプトタグを追加することで、クライアントコンポーネントにLitを引き続き使用できます。次に例を示します。
+
+```astro
+<script>
+  import "../components/MyTabs";
+</script>
+
+<my-tabs title="These are my tabs">...</my-tabs>
+```
+
+Litインテグレーションを自分でメンテナンスすることに興味がある場合は、[`@astrojs/lit`の最終公開バージョン](https://github.com/withastro/astro/tree/astro%404.13.0/packages/integrations/lit)を開始点として使用し、関連するパッケージをアップグレードすることをお勧めします。
