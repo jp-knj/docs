@@ -1,0 +1,44 @@
+---
+title: Tailwind CSSでレンダリングされたMarkdownのスタイル設定
+description: Tailwind CSS Typographyプラグインを使用して、レンダリングされたMarkdownのスタイルを設定する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Tailwind CSSは、クラスベースのアプローチを使用して要素のスタイルを設定します。ただし、MarkdownファイルからレンダリングされたHTMLなど、クラスを追加できない場合があります。
+
+このレシピでは、[Tailwind CSS Typography](https://tailwindcss.com/docs/typography-plugin)プラグインを使用して、レンダリングされたMarkdownのスタイルを設定する方法を学びます。
+
+## レシピ
+
+<Steps>
+1.  Tailwind CSS Typographyプラグインをインストールします。
+
+    ```bash
+    npm install -D @tailwindcss/typography
+    ```
+
+2.  `tailwind.config.cjs`で、プラグインを`plugins`配列に追加します。
+
+    ```js title="tailwind.config.cjs"
+    module.exports = {
+      // ...
+      plugins: [
+        require('@tailwindcss/typography'),
+      ],
+    };
+    ```
+
+3.  `prose`クラスを使用して、レンダリングされたMarkdownのスタイルを設定します。
+
+    ```astro title="src/pages/index.astro"
+    ---
+    import { Content } from '../content/post.md';
+    ---
+    <article class="prose">
+      <Content />
+    </article>
+    ```
+</Steps>
