@@ -1,0 +1,208 @@
+---
+title: AstroページでHTMLフォームを構築する
+description: HTMLフォームを構築し、frontmatterで送信を処理する方法を学びます。
+type: recipe
+i18nReady: false
+---
+import { Steps } from '@astrojs/starlight/components';
+
+オンデマンドでレンダリングされるAstroページは、フォームの表示と処理の両方が可能です。このレシピでは、標準的なHTMLフォームを使用してサーバーにデータを送信します。frontmatterスクリプトがサーバー上でデータを処理するため、クライアントにJavaScriptは送信されません。
+
+## 前提条件
+- [サーバーアダプター](/ja/guides/on-demand-rendering/#server-adapters)がインストールされたAstroプロジェクト。
+
+## レシピ
+
+<Steps>
+1. フォームとその処理コードを含む`.astro`ページを作成または特定します。たとえば、登録ページを追加できます。
+
+    ```astro title="src/pages/register.astro"
+    ---
+    ---
+    <h1>登録</h1>
+    ```
+
+2. いくつかの入力を持つ`<form>`タグをページに追加します。各入力には、その入力の値を説明する`name`属性が必要です。
+
+    フォームを送信するための`<button>`または`<input type="submit">`要素を必ず含めてください。
+    ```astro title="src/pages/register.astro"
+    ---
+    ---
+    <h1>登録</h1>
+    <form>
+      <label>
+        ユーザー名:
+        <input type="text" name="username" />
+      </label>
+      <label>
+        メールアドレス:
+        <input type="email" name="email" />
+      </label>
+      <label>
+        パスワード:
+        <input type="password" name="password" />
+      </label>
+      <button>送信</button>
+    </form>
+    ```
+
+3. [組み込みのフォームバリデーション](https://developer.mozilla.org/ja/docs/Learn/Forms/Form_validation#using_built-in_form_validation)を使用して、JavaScriptが無効な場合でも機能する基本的なクライアントサイドバリデーションを提供します。
+
+    この例では、
+    - `required`は、フィールドが入力されるまでフォームの送信を防ぎます。
+    - `minlength`は、入力テキストの最小必須長を設定します。
+    - `type="email"`は、有効なメール形式のみを受け入れるバリデーションも導入します。
+
+    ```astro title="src/pages/register.astro"
+    ---
+    ---
+    <h1>登録</h1>
+    <form>
+      <label>
+        ユーザー名:
+        <input type="text" name="username" required />
+      </label>
+      <label>
+        メールアドレス:
+        <input type="email" name="email" required />
+      </label>
+      <label>
+        パスワード:
+        <input type="password" name="password" required minlength="6" />
+      </label>
+      <button>送信</button>
+    </form>
+    ```
+    
+    :::tip
+    `<script>`タグと[制約検証API](https://developer.mozilla.org/ja/docs/Web/HTML/Constraint_validation#complex_constraints_using_the_constraint_validation_api)を使用して、複数のフィールドを参照するカスタムバリデーションロジックを追加できます。
+
+    より複雑なバリデーションロジックを簡単に記述するには、[フロントエンドフレームワーク](/ja/guides/framework-components/)を使用してフォームを構築し、[React Hook Form](https://react-hook-form.com/)や[Felte](https://felte.dev/)のようなフォームライブラリを選択できます。
+    :::
+
+4. フォームを送信すると、ブラウザはページを再度リクエストします。フォームのデータ転送`method`を`POST`に変更して、URLパラメータとしてではなく、`Request`ボディの一部としてフォームデータを送信します。
+
+    ```astro title="src/pages/register.astro" 'method="POST"'
+    ---
+    ---
+    <h1>登録</h1>
+    <form method="POST">
+      <label>
+        ユーザー名:
+        <input type="text" name="username" required />
+      </label>
+      <label>
+        メールアドレス:
+        <input type="email" name="email" required />
+      </label>
+      <label>
+        パスワード:
+        <input type="password" name="password" required minlength="6" />
+      </label>
+      <button>送信</button>
+    </form>
+    ```
+
+5.  frontmatterで`POST`メソッドをチェックし、`Astro.request.formData()`を使用してフォームデータにアクセスします。`POST`リクエストがフォームから送信されず、`formData`が無効な場合を処理するために、これを`try...catch`ブロックでラップします。
+
+    ```astro title="src/pages/register.astro" ins={2-16} "Astro.request.formData()"
+    --- 
+    export const prerender = false; // 'server'モードでは不要
+    
+    if (Astro.request.method === "POST") {
+      try {
+        const data = await Astro.request.formData();
+        const name = data.get("username");
+        const email = data.get("email");
+        const password = data.get("password");
+        // データで何かを行う
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        }
+      }
+    }
+    ---
+    <h1>登録</h1>
+    <form method="POST">
+      <label>
+        ユーザー名:
+        <input type="text" name="username" required />
+      </label>
+      <label>
+        メールアドレス:
+        <input type="email" name="email" required />
+      </label>
+      <label>
+        パスワード:
+        <input type="password" name="password" required minlength="6" />
+      </label>
+      <button>送信</button>
+    </form>
+    ```
+
+6. サーバーでフォームデータをバリデーションします。これには、悪意のある送信をエンドポイントに防ぎ、フォームバリデーションを持たない稀なレガシーブラウザをサポートするために、クライアントで行われるのと同じバリデーションを含める必要があります。
+
+    クライアントでは実行できないバリデーションを含めることもできます。たとえば、この例ではメールがすでにデータベースに登録されているかどうかをチェックします。
+
+    エラーメッセージは、`errors`オブジェクトに格納し、テンプレートでアクセスすることでクライアントに送り返すことができます。
+
+    ```astro title="src/pages/register.astro" ins={7, 14-24, 43, 48, 53}
+    ---
+    export const prerender = false; // 'server'モードでは不要
+    
+    import { isRegistered, registerUser } from "../../data/users"
+    import { isValidEmail } from "../../utils/isValidEmail";
+
+    const errors = { username: "", email: "", password: "" };
+    if (Astro.request.method === "POST") {
+      try {
+        const data = await Astro.request.formData();
+        const name = data.get("username");
+        const email = data.get("email");
+        const password = data.get("password");
+        if (typeof name !== "string" || name.length < 1) {
+          errors.username += "ユーザー名を入力してください。";
+        }
+        if (typeof email !== "string" || !isValidEmail(email)) {
+          errors.email += "メールアドレスが無効です。";
+        } else if (await isRegistered(email)) {
+          errors.email += "このメールアドレスはすでに登録されています。";
+        }
+        if (typeof password !== "string" || password.length < 6) {
+          errors.password += "パスワードは6文字以上である必要があります。";
+        }
+        const hasErrors = Object.values(errors).some(msg => msg)
+        if (!hasErrors) {
+          await registerUser({name, email, password});
+          return Astro.redirect("/login");
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        }
+      }
+    }
+    ---
+    <h1>登録</h1>
+    <form method="POST">
+      <label>
+        ユーザー名:
+        <input type="text" name="username" />
+      </label>
+      {errors.username && <p>{errors.username}</p>}
+      <label>
+        メールアドレス:
+        <input type="email" name="email" required />
+      </label>
+      {errors.email && <p>{errors.email}</p>}
+      <label>
+        パスワード:
+        <input type="password" name="password" required minlength="6" />
+      </label>
+      {errors.password && <p>{errors.password}</p>}
+      <button>登録</button>
+    </form>
+
+    ```
+</Steps>
