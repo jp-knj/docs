@@ -1,0 +1,92 @@
+---
+title: ツールバーアプリの作成
+description: Astro Dev Toolbarにカスタムアプリを追加する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Astro Dev Toolbarは、開発中に役立つ情報を提供するアプリのセットです。独自のカスタムアプリを追加して、プロジェクトに関する情報を提供できます。
+
+このレシピでは、現在のページのメタデータを表示するカスタムツールバーアプリを作成する方法を学びます。
+
+## レシピ
+
+<Steps>
+1.  `astro.config.mjs`で、`devToolbar`設定オプションを有効にします。
+
+    ```js title="astro.config.mjs"
+    import { defineConfig } from 'astro/config';
+
+    export default defineConfig({
+      devToolbar: {
+        enabled: true,
+      },
+    });
+    ```
+
+2.  `src/toolbar/`に、ツールバーアプリのエントリーポイントとなるAstroコンポーネントを作成します。このコンポーネントは、ツールバーに表示されるアイコンと、クリックされたときに表示されるモーダルを定義します。
+
+    ```astro title="src/toolbar/Metadata.astro"
+    ---
+    import type { DevToolbarApp } from 'astro';
+
+    const app: DevToolbarApp = {
+      id: 'my-app',
+      name: 'My App',
+      icon: '🚀',
+      init(canvas, eventTarget) {
+        const button = canvas.querySelector('button');
+        button.addEventListener('click', () => {
+          eventTarget.dispatchEvent(new CustomEvent('toggle-modal'));
+        });
+      },
+    };
+    ---
+    <button>メタデータを表示</button>
+    ```
+
+3.  同じファイルに、モーダルに表示されるUIを定義する2番目のコンポーネントをエクスポートします。
+
+    ```astro title="src/toolbar/Metadata.astro"
+    ---
+    // ...
+    ---
+    <button>メタデータを表示</button>
+
+    <style>
+      /* ... */
+    </style>
+
+    export const Modal = () => {
+      const [metadata, setMetadata] = useState(null);
+
+      useEffect(() => {
+        fetch('/api/metadata')
+          .then(res => res.json())
+          .then(setMetadata);
+      }, []);
+
+      return (
+        <div>
+          <h2>メタデータ</h2>
+          {metadata ? <pre>{JSON.stringify(metadata, null, 2)}</pre> : <p>読み込み中...</p>}
+        </div>
+      );
+    }
+    ```
+
+4.  `astro.config.mjs`で、ツールバーアプリを`devToolbar`設定オプションに追加します。
+
+    ```js title="astro.config.mjs"
+    import { defineConfig } from 'astro/config';
+
+    export default defineConfig({
+      devToolbar: {
+        enabled: true,
+        apps: ['src/toolbar/Metadata.astro'],
+      },
+    });
+    ```
+</Steps>
