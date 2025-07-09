@@ -1,0 +1,54 @@
+---
+title: ストリーミングによるページのパフォーマンス向上
+description: ストリーミングを使用して、ページのパフォーマンスを向上させる方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+ストリーミングを使用すると、サーバーはページのコンテンツをチャンクで送信できます。これにより、ページの初期読み込み時間を短縮し、ユーザーエクスペリエンスを向上させることができます。
+
+このレシピでは、ストリーミングを使用してページのパフォーマンスを向上させる方法を学びます。
+
+## 前提条件
+
+- [オンデマンドレンダリング用のアダプター](/ja/guides/on-demand-rendering/)が設定されたプロジェクト。
+
+## レシピ
+
+<Steps>
+1.  `src/components/`に、データのフェッチに時間がかかるコンポーネントを作成します。
+
+    ```astro title="src/components/SlowComponent.astro"
+    ---
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    ---
+    <p>このコンポーネントは読み込みに2秒かかりました。</p>
+    ```
+
+2.  `src/pages/`のページでこのコンポーネントを使用します。
+
+    ```astro title="src/pages/index.astro"
+    ---
+    import SlowComponent from '../components/SlowComponent.astro';
+    ---
+    <h1>ホーム</h1>
+    <SlowComponent />
+    ```
+
+3.  `astro.config.mjs`で、`output`を`server`に設定し、`experimental.streaming`を有効にします。
+
+    ```js title="astro.config.mjs"
+    import { defineConfig } from 'astro/config';
+
+    export default defineConfig({
+      output: 'server',
+      experimental: {
+        streaming: true,
+      },
+    });
+    ```
+
+4.  開発サーバーを再起動し、ページを再度読み込みます。ページの初期コンテンツがすぐに表示され、2秒後に`SlowComponent`が表示されるはずです。
+</Steps>
