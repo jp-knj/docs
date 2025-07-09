@@ -1,0 +1,65 @@
+---
+title: 状態の共有
+description: ページ上の複数のアイランド間で状態を共有する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Framework, Island } from '@astrojs/starlight/components';
+
+デフォルトでは、Astroアイランドは分離されています。あるアイランドの状態の変更は、他のアイランドには影響しません。
+
+このレシピでは、[Nano Stores](https://github.com/nanostores/nanostores)を使用して、ページ上の複数のアイランド間で状態を共有する方法を学びます。
+
+## レシピ
+
+<Steps>
+1.  Nano Storesをインストールします。
+
+    ```bash
+    npm install nanostores
+    ```
+
+2.  `src/stores/`に、共有する状態を定義するストアを作成します。
+
+    ```js title="src/stores/cart.js"
+    import { atom } from 'nanostores';
+
+    export const isCartOpen = atom(false);
+    ```
+
+3.  ストアを使用するReactコンポーネントを作成します。
+
+    ```jsx title="src/components/Cart.jsx"
+    import { useStore } from '@nanostores/react';
+    import { isCartOpen } from '../stores/cart.js';
+
+    export default function Cart() {
+      const $isCartOpen = useStore(isCartOpen);
+
+      return (
+        <div>
+          <button onClick={() => isCartOpen.set(!$isCartOpen)}>
+            {$isCartOpen ? 'カートを閉じる' : 'カートを開く'}
+          </button>
+          {$isCartOpen && (
+            <div>
+              <h2>カート</h2>
+              <p>カートは空です</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+    ```
+
+4.  Astroページでコンポーネントを使用します。
+
+    ```astro title="src/pages/index.astro"
+    ---
+    import Cart from '../components/Cart.jsx';
+    ---
+    <Cart client:load />
+    ```
+</Steps>
