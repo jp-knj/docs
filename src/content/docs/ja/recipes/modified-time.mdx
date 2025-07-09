@@ -1,0 +1,54 @@
+---
+title: 更新日時の表示
+description: ページの最終更新日時を表示する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+ページの最終更新日時を表示すると、読者がコンテンツがまだ関連性があるかどうかを判断するのに役立ちます。
+
+このレシピでは、Gitからページの最終更新日時を取得し、それをページに表示する方法を学びます。
+
+## 前提条件
+
+- Gitリポジトリで管理されているAstroプロジェクト。
+
+## レシピ
+
+<Steps>
+1.  `src/layouts/`に、ページの最終更新日時を取得して表示するレイアウトを作成します。
+
+    ```astro title="src/layouts/Layout.astro"
+    ---
+    import { execSync } from 'child_process';
+
+    const { file } = Astro.props;
+
+    const lastUpdated = execSync(`git log -1 --format=%cd -- ${file}`).toString().trim();
+    ---
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Astro</title>
+      </head>
+      <body>
+        <slot />
+        <p>最終更新日: {lastUpdated}</p>
+      </body>
+    </html>
+    ```
+
+2.  `src/pages/`のページでこのレイアウトを使用し、`Astro.source`を`file`プロップとして渡します。
+
+    ```astro title="src/pages/index.astro"
+    ---
+    import Layout from '../layouts/Layout.astro';
+    ---
+    <Layout file={Astro.source}>
+      <h1>ホーム</h1>
+    </Layout>
+    ```
+</Steps>
