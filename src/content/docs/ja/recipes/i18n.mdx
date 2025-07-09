@@ -1,0 +1,100 @@
+---
+title: i18n（国際化）
+description: Astroでi18n（国際化）を設定する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Astroは、国際化（i18n）のための組み込み機能を提供していません。このレシピでは、Astroでi18nを設定する方法を学びます。
+
+## 前提条件
+
+- [オンデマンドレンダリング用のアダプター](/ja/guides/on-demand-rendering/)が設定されたプロジェクト。
+
+## レシピ
+
+<Steps>
+1.  `src/i18n/`に、サポートする各言語の翻訳を含むJSONファイルを作成します。
+
+    ```json title="src/i18n/en.json"
+    {
+      "greeting": "Hello",
+      "introduction": "Welcome to our website!"
+    }
+    ```
+
+    ```json title="src/i18n/fr.json"
+    {
+      "greeting": "Bonjour",
+      "introduction": "Bienvenue sur notre site web !"
+    }
+    ```
+
+2.  `src/middleware.ts`にミドルウェアを作成し、リクエストのURLからロケールを検出し、それを`Astro.locals`に保存します。
+
+    ```ts title="src/middleware.ts"
+    import { defineMiddleware } from 'astro:middleware';
+
+    const languages = ['en', 'fr'];
+
+    export const onRequest = defineMiddleware(async (context, next) => {
+      const { url, locals } = context;
+      const { pathname } = url;
+
+      const lang = pathname.split('/')[1];
+
+      if (languages.includes(lang)) {
+        locals.lang = lang;
+      } else {
+        locals.lang = 'en';
+      }
+
+      return next();
+    });
+    ```
+
+3.  `src/layouts/`に、現在の言語の翻訳をフェッチし、それらを小道具としてページに渡すレイアウトを作成します。
+
+    ```astro title="src/layouts/Layout.astro"
+    ---
+    import { promises as fs } from 'fs';
+    import path from 'path';
+
+    const { lang } = Astro.locals;
+
+    const translationsPath = path.resolve(`src/i18n/${lang}.json`);
+    const translationsFile = await fs.readFile(translationsPath, 'utf-8');
+    const t = JSON.parse(translationsFile);
+
+    const { title } = Astro.props;
+    ---
+    <html lang={lang}>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>{title}</title>
+      </head>
+      <body>
+        <slot {t} />
+      </body>
+    </html>
+    ```
+
+4.  `src/pages/`のページでこのレイアウトを使用し、翻訳関数をスロットから受け取ります。
+
+    ```astro title="src/pages/index.astro"
+    ---
+    import Layout from '../layouts/Layout.astro';
+    ---
+    <Layout title="ホーム">
+      {(t) => (
+        <>
+          <h1>{t.greeting}</h1>
+          <p>{t.introduction}</p>
+        </>
+      )}
+    </Layout>
+    ```
+</Steps>
