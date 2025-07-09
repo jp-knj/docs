@@ -1,0 +1,81 @@
+---
+title: 外部リンクのスタイル設定
+description: 外部リンクに自動的にアイコンを追加する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+外部リンクにアイコンを追加したり、異なるスタイルを適用したりすることで、ユーザーが現在のサイトを離れることを示すことができます。
+
+このレシピでは、CSSと少しのJavaScriptを使用して、外部リンクに自動的にアイコンを追加する方法を学びます。
+
+## レシピ
+
+<Steps>
+1.  `public/`ディレクトリに、外部リンクを示すために使用するSVGアイコンを追加します。
+
+2.  `src/styles/`に新しいCSSファイルを作成し、外部リンクのスタイルを設定します。`data-external-link`属性を持つリンクにアイコンを追加します。
+
+    ```css title="src/styles/external-links.css"
+    a[data-external-link] {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    a[data-external-link]::after {
+      content: '';
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      background-image: url(/external-link-icon.svg);
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    ```
+
+3.  `src/layouts/`に新しいAstroコンポーネントを作成し、現在のサイトのドメイン外のすべてのリンクに`data-external-link`属性を追加するスクリプトを追加します。
+
+    ```astro title="src/layouts/Layout.astro"
+    ---
+    ---
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Astro</title>
+        <link rel="stylesheet" href="/src/styles/external-links.css" />
+      </head>
+      <body>
+        <slot />
+        <script>
+          const links = document.querySelectorAll('a');
+          const currentHost = window.location.hostname;
+
+          links.forEach((link) => {
+            if (link.hostname !== currentHost) {
+              link.setAttribute('data-external-link', '');
+              link.setAttribute('target', '_blank');
+              link.setAttribute('rel', 'noopener');
+            }
+          });
+        </script>
+      </body>
+    </html>
+    ```
+
+4.  `src/pages/`のページでこのレイアウトを使用します。
+
+    ```astro title="src/pages/index.astro"
+    ---
+    import Layout from '../layouts/Layout.astro';
+    ---
+    <Layout>
+      <h1>外部リンクのテスト</h1>
+      <a href="https://astro.build">Astro</a>
+      <a href="/">ホーム</a>
+    </Layout>
+    ```
+</Steps>
