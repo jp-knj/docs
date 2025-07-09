@@ -1,0 +1,64 @@
+---
+title: 読了時間の表示
+description: ページの読了時間を計算して表示する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { remark } from 'remark';
+import strip from 'strip-markdown';
+
+ページの読了時間を表示すると、読者がコンテンツを読むのにどれくらいの時間がかかるかを判断するのに役立ちます。
+
+このレシピでは、ページのコンテンツから読了時間を計算し、それをページに表示する方法を学びます。
+
+## レシピ
+
+<Steps>
+1.  `reading-time`パッケージをインストールします。
+
+    ```bash
+    npm install reading-time
+    ```
+
+2.  `src/layouts/`に、ページの読了時間を計算して表示するレイアウトを作成します。
+
+    ```astro title="src/layouts/Layout.astro"
+    ---
+    import readingTime from 'reading-time';
+    import { remark } from 'remark';
+    import strip from 'strip-markdown';
+
+    const { content } = Astro.props;
+
+    const processedContent = await remark().use(strip).process(content);
+    const stats = readingTime(processedContent.toString());
+    ---
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Astro</title>
+      </head>
+      <body>
+        <p>読了時間: {stats.text}</p>
+        <slot />
+      </body>
+    </html>
+    ```
+
+3.  `src/pages/`のページでこのレイアウトを使用し、`Astro.source`を`content`プロップとして渡します。
+
+    ```astro title="src/pages/index.astro"
+    ---
+    import Layout from '../layouts/Layout.astro';
+    import { promises as fs } from 'fs';
+
+    const content = await fs.readFile(Astro.source, 'utf-8');
+    ---
+    <Layout content={content}>
+      <h1>ホーム</h1>
+    </Layout>
+    ```
+</Steps>
