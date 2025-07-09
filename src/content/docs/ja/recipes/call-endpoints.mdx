@@ -1,0 +1,55 @@
+---
+title: APIエンドポイントの呼び出し
+description: APIエンドポイントを呼び出して、ページにデータを表示する方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Astroコンポーネントはサーバー上でレンダリングされるため、クライアントサイドのJavaScriptなしでAPIエンドポイントを呼び出すことができます。
+
+このレシピでは、トップレベルの`await`を使用してAPIエンドポイントを呼び出し、そのデータをページに表示します。
+
+## 前提条件
+
+- [オンデマンドレンダリング用のアダプター](/ja/guides/on-demand-rendering/)が設定されたプロジェクト。
+
+## レシピ
+
+<Steps>
+1.  データを返すAPIエンドポイントを作成します。この例では、`src/pages/api/time.ts`に現在時刻を返すエンドポイントを作成します。
+
+    ```ts title="src/pages/api/time.ts"
+    import type { APIRoute } from 'astro';
+
+    export const GET: APIRoute = () => {
+      return new Response(
+        JSON.stringify({
+          time: new Date().toLocaleTimeString(),
+        })
+      );
+    };
+    ```
+
+2.  Astroページで`fetch()`を使用してAPIエンドポイントを呼び出します。`Astro.url`オブジェクトを使用して、現在のURLから完全なURLを構築します。
+
+    ```astro title="src/pages/index.astro" ins={4-5}
+    ---
+    ---
+    <h1>時刻</h1>
+    <p>現在の時刻は、{time}です。</p>
+    ```
+
+3.  レスポンスからデータを抽出し、テンプレートで使用する変数に割り当てます。
+
+    ```astro title="src/pages/index.astro" ins={4-6}
+    ---
+    const response = await fetch(new URL('/api/time', Astro.url));
+    const data = await response.json();
+    const time = data.time;
+    ---
+    <h1>時刻</h1>
+    <p>現在の時刻は、{time}です。</p>
+    ```
+</Steps>
