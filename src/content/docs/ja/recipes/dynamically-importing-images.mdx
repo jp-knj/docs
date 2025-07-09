@@ -1,0 +1,77 @@
+---
+title: 画像の動的インポート
+description: `getImage()`を使用して、フロントマターやCMSから画像のURLを動的にインポートする方法を学びます。
+type: recipe
+i18nReady: false
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Astroの`getImage()`関数は、`src`プロパティにローカル画像への静的なインポートパスを必要とします。しかし、画像のURLがフロントマターやCMSから来る場合、`getImage()`に渡す前に、それらのURLをローカル画像へのパスに解決する必要があります。
+
+このレシピでは、`glob()`を使用してすべての画像をインポートし、動的なURLと一致する画像を見つける方法を学びます。
+
+## レシピ
+
+<Steps>
+1.  `src/content/`にブログ投稿のコレクションを作成し、各投稿に`image`と`alt`フィールドを追加します。
+
+    ```ts title="src/content/config.ts"
+    import { z, defineCollection } from 'astro:content';
+
+    const blogCollection = defineCollection({
+      schema: z.object({
+        title: z.string(),
+        image: z.string(),
+        alt: z.string(),
+      }),
+    });
+
+    export const collections = {
+      blog: blogCollection,
+    };
+    ```
+
+2.  `src/content/blog/`にいくつかのブログ投稿を追加し、`image`フィールドにローカル画像へのパスを指定します。
+
+    ```md title="src/content/blog/post-1.md"
+    ---
+    title: Post 1
+    image: ../../assets/post-1.png
+    alt: A picture of a cat
+    ---
+
+    # Post 1
+    ```
+
+3.  `src/pages/`に、すべての画像をインポートし、各ブログ投稿の`image`フィールドと一致する画像を見つけるページを作成します。
+
+    ```astro title="src/pages/blog.astro"
+    ---
+    import { getCollection } from 'astro:content';
+    import { getImage } from 'astro:assets';
+
+    const posts = await getCollection('blog');
+
+    const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/*.{jpeg,jpg,png,gif}');
+    ---
+
+    <h1>ブログ</h1>
+    <ul>
+      {posts.map(async (post) => {
+        if (!images[post.data.image]) {
+          throw new Error(`"${post.data.image}"は/src/assets/に存在しません。`);
+        }
+        const image = await getImage({ src: images[post.data.image](), alt: post.data.alt });
+        return (
+          <li>
+            <a href={`/blog/${post.slug}`}>
+              <h2>{post.data.title}</h2>
+              <img {...image.attributes} />
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+    ```
+</Steps>
