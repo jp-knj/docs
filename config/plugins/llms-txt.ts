@@ -3,6 +3,8 @@ import starlightLlmsTxt from 'starlight-llms-txt';
 /** Starlight plugin that sets up `starlight-llms-txt` with configuration for the Astro docs. */
 export const starlightPluginLlmsTxt = () =>
 	starlightLlmsTxt({
+		// Skip AstroContainer.renderToString() which is incompatible with xmdx
+		rawContent: true,
 		// Basic information about the docs and Astro to display in the main `llms.txt` entry file.
 		projectName: 'Astro',
 		description: 'Astro is an all-in-one web framework for building websites. ',
